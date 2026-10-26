@@ -145,7 +145,7 @@ export function MetadataInputs({
 
       {error ? <Banner tone="danger" title={error} /> : null}
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="space-y-2">
           <h3 className="text-sm font-semibold">a. Packages folder</h3>
           <p className={hint}>

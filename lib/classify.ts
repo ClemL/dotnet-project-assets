@@ -202,7 +202,8 @@ export function classifyAll(input: ClassifyInput): ClassifyOutput {
     byId[key] = {
       origin,
       mixed: origins.size > 1,
-      reasons: list.length === 1 ? [list[0]?.c.reason ?? ''] : list.map((x) => `${x.version}: ${x.c.reason}`),
+      // One line when every version has the same reason, otherwise one line per version.
+      reasons: new Set(list.map((x) => x.c.reason)).size === 1 ? [list[0]?.c.reason ?? ''] : list.map((x) => `${x.version}: ${x.c.reason}`),
     };
   }
 

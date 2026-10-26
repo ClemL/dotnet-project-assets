@@ -147,7 +147,7 @@ export function ClassificationPanel({
         ) : null}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className={`${card} space-y-2`}>
           <h2 className={h2}>System prefixes</h2>
           <p className={hint}>Case-insensitive prefix match → System.</p>

@@ -40,7 +40,7 @@ export function ChipListEditor({
       <ul className="flex flex-wrap gap-1.5" aria-label={label}>
         {values.length === 0 ? <li className="text-sm text-muted">None</li> : null}
         {values.map((v) => (
-          <li key={v} className="inline-flex max-w-full items-center gap-1 rounded-full border border-line-strong bg-surface-2 py-0.5 pl-2.5 pr-1 text-sm">
+          <li key={v} className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-full border border-line-strong bg-surface-2 py-0.5 pl-2.5 pr-1 text-sm">
             <span className={mono ? 'truncate font-mono text-xs' : 'truncate'}>{v}</span>
             <button
               type="button"

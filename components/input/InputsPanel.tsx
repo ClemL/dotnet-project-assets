@@ -45,7 +45,7 @@ export function InputsPanel({
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className={card}>
           <PasteInputs slots={pastes} onChange={onPastes} />
         </div>
