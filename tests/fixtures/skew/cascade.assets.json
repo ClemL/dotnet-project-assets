@@ -1,0 +1,36 @@
+{
+  "version": 3,
+  "targets": {
+    "net10.0": {
+      "Acme.Core/1.0.0-200": { "type": "package" },
+      "Acme.Mid/1.0.0-150": { "type": "package", "dependencies": { "Acme.Core": "1.0.0-100" } },
+      "Acme.Top/1.0.0-160": { "type": "package", "dependencies": { "Acme.Mid": "1.0.0-150", "Acme.Core": "1.0.0-200" } },
+      "Acme.Side/1.0.0-170": { "type": "package", "dependencies": { "Acme.Core": "1.0.0-200" } }
+    }
+  },
+  "libraries": {
+    "Acme.Core/1.0.0-200": { "sha512": "x", "type": "package", "path": "acme.core/1.0.0-200" },
+    "Acme.Mid/1.0.0-150": { "sha512": "x", "type": "package", "path": "acme.mid/1.0.0-150" },
+    "Acme.Top/1.0.0-160": { "sha512": "x", "type": "package", "path": "acme.top/1.0.0-160" },
+    "Acme.Side/1.0.0-170": { "sha512": "x", "type": "package", "path": "acme.side/1.0.0-170" }
+  },
+  "projectFileDependencyGroups": { "net10.0": ["Acme.Top >= 1.0.0-160", "Acme.Side >= 1.0.0-170"] },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectName": "Acme.App",
+      "projectPath": "C:\\dev\\git\\Acme\\Acme.App\\Acme.App.csproj",
+      "sources": { "https://api.nuget.org/v3/index.json": {} },
+      "frameworks": { "net10.0": { "targetAlias": "net10.0", "projectReferences": {} } }
+    },
+    "frameworks": {
+      "net10.0": {
+        "targetAlias": "net10.0",
+        "dependencies": {
+          "Acme.Top": { "target": "Package", "version": "[1.0.0-160, )" },
+          "Acme.Side": { "target": "Package", "version": "[1.0.0-170, )" }
+        }
+      }
+    }
+  }
+}

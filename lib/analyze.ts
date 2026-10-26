@@ -6,6 +6,7 @@ import { findDuplicates } from './duplicates';
 import { buildMergedGraph, computeBuildOrder, selectTargets } from './graph';
 import { suggestInternalFeeds } from './metadata';
 import { assignLabels, parseAssetsJson, type ParseInput } from './parse';
+import { analyzeVersionSkew, DEFAULT_SKEW_SETTINGS } from './skew';
 import type {
   AnalysisResult,
   AnalyzeOptions,
@@ -13,6 +14,7 @@ import type {
   ClassifyInput,
   ClassifyOutput,
   DependencyRow,
+  FloatingReport,
   IdKey,
   MergedGraph,
   NodeType,
@@ -20,8 +22,10 @@ import type {
   ParseError,
   ProjectModel,
   ScopeAnalysis,
+  SkewReport,
+  SkewSettings,
 } from './types';
-import { compareVersionStrings } from './version';
+import { compareVersionStrings } from './versions';
 
 export const MERGED_SCOPE = 'merged';
 
@@ -116,6 +120,10 @@ export interface ClassifiedResult {
   classification: ClassifyOutput;
   /** Build order per scope id ("merged" or an inputId). */
   buildOrders: Record<string, BuildOrderView>;
+  /** Version skew per scope id. */
+  skew: Record<string, SkewReport>;
+  /** Floating references per scope id. */
+  floating: Record<string, FloatingReport>;
 }
 
 export interface BuildOrderOptions {
@@ -123,16 +131,24 @@ export interface BuildOrderOptions {
   includeProjects: boolean;
 }
 
-export function classifyAndOrder(analysis: AnalysisResult, input: Omit<ClassifyInput, 'packages'>, opts: BuildOrderOptions): ClassifiedResult {
+export function classifyAndOrder(analysis: AnalysisResult, input: Omit<ClassifyInput, 'packages'>, opts: BuildOrderOptions, skewSettings: SkewSettings = DEFAULT_SKEW_SETTINGS): ClassifiedResult {
   const classification = classifyAll({ ...input, packages: analysis.packages });
   const isInternal = (key: IdKey) => {
     const c = classification.byId[key];
     if (!c || !isInternalOrigin(c.origin)) return false;
     return opts.includeProjects || c.origin !== 'Project';
   };
+  const originOf = (key: IdKey) => classification.byId[key]?.origin;
   const buildOrders: Record<string, BuildOrderView> = {};
-  for (const scope of [analysis.merged, ...analysis.files]) buildOrders[scope.scopeId] = computeBuildOrder(scope.graph, isInternal);
-  return { classification, buildOrders };
+  const skew: Record<string, SkewReport> = {};
+  const floating: Record<string, FloatingReport> = {};
+  for (const scope of [analysis.merged, ...analysis.files]) {
+    buildOrders[scope.scopeId] = computeBuildOrder(scope.graph, isInternal);
+    const r = analyzeVersionSkew({ models: modelsOf(analysis, scope.scopeId), graph: scope.graph, originOf, settings: skewSettings });
+    skew[scope.scopeId] = r.skew;
+    floating[scope.scopeId] = r.floating;
+  }
+  return { classification, buildOrders, skew, floating };
 }
 
 export function scopeOf(analysis: AnalysisResult, scopeId: string): ScopeAnalysis {

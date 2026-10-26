@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { ORIGIN_LABELS } from '@/lib/classify';
 import { ORIGINS, type ClassifyOutput, type DependencyRow, type IdKey, type Origin } from '@/lib/types';
-import { compareVersionStrings } from '@/lib/version';
+import { compareVersionStrings } from '@/lib/versions';
 import { OriginBadge } from '../ui/OriginBadge';
 import { btnSmall, cx, field, td, th } from '../ui/styles';
 

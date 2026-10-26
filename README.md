@@ -27,12 +27,15 @@ Node 20.9 or later.
 | Tab | What it does |
 | --- | --- |
 | Inputs | Paste (one body per box, **+ Add another**), upload `.json` files, or scan a folder. Folder scans keep only `**/obj/project.assets.json` and skip `node_modules`, `bin`, `.vs`, `.git`; the match count is shown before anything is analyzed. Optional `.nupkg.metadata` sources go here too. |
+| Collect scripts | Copyable PowerShell scripts (Copy and Download on every snippet) that gather the inputs from the usual places — `obj\project.assets.json` under your source folders, `deps.json`/`runtimeconfig.json` plus an assembly manifest from build outputs and from deployed apps (IIS, Windows services, install folders), and the NuGet source map — into `C:\dev\results\AssetsGraphInputs_yyyyMMdd_HHmm\`. Read-only on the searched folders, `-WhatIf` supported, CSV copy log. |
 | Classification | Offline toggle, nuget.org lookups, system/internal prefixes, internal feeds, manual overrides. |
 | Dependencies | Sortable, filterable list: Id, resolved version(s), type, direct/transitive, origin, reason, projects. Override any origin per Id. |
 | Duplicates | Across target frameworks, across projects (drift), range conflicts, redundant direct references, case-only Id collisions. |
 | Tree | Per project and target. `Id (requested range → resolved)`, `(*)` jumps to the first expansion, cycles are flagged, and the search box highlights every path to an Id. |
 | Build order | Internal nodes only, public chains collapsed, Kahn waves, cycle paths when no order exists, and a DAG colored by wave. |
-| Export | Markdown, JSON, and CSV (`-Dependencies`, `-BuildOrder`) named `AssetsGraph_<ProjectNameOrMerged>_yyyyMMdd_HHmm.<ext>`. |
+| Version skew | Stale internal builds: per-package skew (requested vs resolved build, spread, oldest requester, severity), consumer ranking with the outlier, a wave-ordered rebuild plan (with cascade), and floating/unpinned direct references with lock-file and Central Package Management status. Settings (build-number regex, thresholds, rebuild minimum, cascade, public packages) are saved in the browser. |
+| Binding check | Enabled once `<App>.deps.json` and an assembly manifest are loaded (Inputs → Runtime binding inputs). Paste a FileNotFoundException / FileLoadException to find every requester of that exact assembly version, what is deployed instead, and the NuGet packages on both sides. Also lists every reference by classification, assemblies with multiple copies, and package version ↔ AssemblyVersion correlation. |
+| Export | Markdown, JSON, and CSV (`-Dependencies`, `-BuildOrder`, `-VersionSkew`) named `AssetsGraph_<ProjectNameOrMerged>_yyyyMMdd_HHmm.<ext>`. |
 
 The **Scope** selector switches every results tab between the merged graph and a single file.
 
@@ -105,13 +108,61 @@ Plan availability changes; check <https://vercel.com/docs/deployment-protection>
 ## Code layout
 
 ```
-lib/        pure analysis code, no React or DOM: parse, graph, duplicates, classify, metadata, export, version, framework, paths
+lib/        pure analysis code, no React or DOM: parse, graph, duplicates, classify, metadata, export, versions, framework, paths,
+            skew + floating (Version skew), binding + bindingInputs (Binding check)
 workers/    analyze.worker.ts (wraps lib) and the message protocol
 client/     browser side effects with injectable dependencies: nuget.org lookups, localStorage, file and folder picking, downloads
 components/ React UI
 tests/      Vitest suites and hand-written fixtures
 scripts/    Export-NuGetSourceMap.ps1
+public/scripts/  Export-AssemblyManifest.ps1, Collect-ProjectAssets.ps1, Collect-BuildOutputs.ps1, Collect-DeployedApps.ps1
+                 (shown on the Collect scripts tab; the Collect-* scripts run in Windows PowerShell 5.1 and 7)
 ```
+
+## Binding check rules
+
+The assembly manifest comes from `public/scripts/Export-AssemblyManifest.ps1` (PowerShell 7+), which reads
+metadata with `PEReader`/`MetadataReader` and never loads an assembly. Package versions and AssemblyVersions
+are never compared with each other; deps.json is the only mapping between them.
+
+Verified on .NET 10.0.13 (default load context) by swapping DLLs under a test app:
+
+1. A deployed version lower than the reference fails with FileNotFoundException "The system cannot find the
+   file specified", the same exception as a missing file. The exception type does not separate the two.
+2. A DLL in `bin\` that `<App>.deps.json` does not list is not loadable (same FileNotFoundException).
+3. The public key token is not checked: a different key, signed → unsigned, and unsigned → signed all bind.
+   TOKEN_MISMATCH is therefore a warning, not an error (.NET Framework would fail).
+4. When the app and the shared framework both ship an assembly, the higher version wins, compared using the
+   `assemblyVersion` recorded in deps.json. Without that field, the framework copy wins.
+5. deps.json records `assemblyVersion` for package and project-reference assets; only the application's own
+   entry has none. RID-specific assets (`runtimes/win/lib/...`) are under `runtimeTargets`.
+
+Plugin folders (manifest roots after the first) resolve from their own folder first, then the app folder.
+
+## Version skew rules
+
+- Requested version = the range's lower bound; a bare `10.0.0-13243` is its own lower bound. A floating range
+  that the resolved version satisfies requests the resolved version (it picked the newest match), so a direct
+  `[10.0.*-*, )` reference is never stale.
+- Lag = resolved build − requested build, only when both share major.minor.patch and the build-number regex
+  (default `-(?:[A-Za-z]+\.)?(\d+)$`) matches both. Otherwise the SemVer difference is shown (major → high,
+  minor → medium, patch/prerelease → low).
+- Internal = Project, Private, or Private (inferred). Unclassified packages count as public.
+- Edges to `type: project` children are skipped: a project's version is not a package version.
+
+Verified against `project.assets.json` written by .NET SDK 10.0.113 (NuGet 7.x) and the NuGet.ProjectModel
+writer from 5.11 through 7.9:
+
+1. `project.restore.restoreLockProperties.restorePackagesWithLockFile` is a string (`"true"`), and the whole
+   object is written only when a lock property is set.
+2. `centralPackageVersionsManagementEnabled`, `CentralPackageTransitivePinningEnabled` (capital C),
+   `restoreLockedMode`, and per-dependency `versionCentrallyManaged` / `autoReferenced` are written only when
+   true. Absent therefore means unknown, not disabled.
+3. An exact pin `[2.1.35]` is written as `[2.1.35, 2.1.35]`; floats as `[13.0.*, )` and `[4.*-*, )`;
+   `projectFileDependencyGroups` writes `Newtonsoft.Json >= 13.0.*`.
+4. `VersionOverride` writes the override into `version` plus `versionOverride`, without `versionCentrallyManaged`.
+5. SDK 10 adds `project.frameworks[tfm].packagesToPrune` (272 entries for net10.0). Pruned Ids can appear in a
+   parent's dependency list with no entry in `targets`; those edges are skipped.
 
 ## Assumptions about project.assets.json to verify against real files
 

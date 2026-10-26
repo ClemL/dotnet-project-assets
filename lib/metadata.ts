@@ -3,7 +3,7 @@
 
 import { splitPath } from './paths';
 import type { SourceMap } from './types';
-import { parseVersion, versionKey } from './version';
+import { parseVersion, versionKey } from './versions';
 
 export const NUGET_ORG_V3 = 'https://api.nuget.org/v3/index.json';
 

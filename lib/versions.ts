@@ -1,4 +1,7 @@
-// NuGet version and version-range handling (subset of NuGet.Versioning semantics).
+// NuGet version and version-range handling (subset of NuGet.Versioning semantics), plus the
+// build-number and range-kind helpers used by the Version Skew analysis.
+
+import type { RangeKind, VersionDiff } from './types';
 
 export interface NuGetVersion {
   major: number;
@@ -286,4 +289,84 @@ export function parseDependencyGroupEntry(entry: string): { id: string; range: s
   if (min !== undefined && max !== undefined && min === max && minInclusive && maxInclusive) return { id, range: `[${min}]` };
   if (max === undefined) return { id, range: minInclusive ? `[${min}, )` : `(${min}, )` };
   return { id, range: `${min !== undefined && minInclusive ? '[' : '('}${min ?? ''}, ${max}${maxInclusive ? ']' : ')'}` };
+}
+
+// ---------------------------------------------------------------------------
+// Build numbers, version distance, range kinds (Version Skew)
+// ---------------------------------------------------------------------------
+
+/** Matches "10.0.0-13243" and "1.0.0-beta.11541"; capture group 1 is the build number. */
+export const DEFAULT_BUILD_PATTERN = '-(?:[A-Za-z]+\\.)?(\\d+)$';
+
+/** Compiles a build-number pattern; it must contain at least one capture group. */
+export function compileBuildPattern(source: string): { ok: true; re: RegExp } | { ok: false; error: string } {
+  let re: RegExp;
+  try {
+    re = new RegExp(source);
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+  // A pattern that also matches the empty string reports its group count.
+  const groups = (new RegExp(`${source}|`).exec('')?.length ?? 1) - 1;
+  if (groups < 1) return { ok: false, error: 'The pattern needs a capture group around the build number, e.g. (\\d+).' };
+  return { ok: true, re };
+}
+
+/** Build number from the normalized version string, or null when the pattern does not match digits. */
+export function extractBuildNumber(version: string, re: RegExp): number | null {
+  const m = re.exec(normalizeVersion(version));
+  const digits = m?.[1];
+  return digits !== undefined && /^\d+$/.test(digits) ? Number(digits) : null;
+}
+
+/**
+ * Distance from `requested` to `resolved`. The lag (resolved build − requested build) is computed only
+ * when both share major.minor.patch (and revision) and both build numbers parse; pass `re = null` for
+ * SemVer distance only.
+ */
+export function versionDiff(requested: string, resolved: string, re: RegExp | null): { diff: VersionDiff; lag: number | null } {
+  const a = parseVersion(requested);
+  const b = parseVersion(resolved);
+  if (!a || !b) return { diff: requested.trim() === resolved.trim() ? 'equal' : 'prerelease', lag: null };
+  if (compareVersions(a, b) === 0) return { diff: 'equal', lag: 0 };
+  if (a.major !== b.major) return { diff: 'major', lag: null };
+  if (a.minor !== b.minor) return { diff: 'minor', lag: null };
+  if (a.patch !== b.patch) return { diff: 'patch', lag: null };
+  if (a.revision !== b.revision) return { diff: 'revision', lag: null };
+  if (re) {
+    const x = extractBuildNumber(requested, re);
+    const y = extractBuildNumber(resolved, re);
+    if (x !== null && y !== null) return { diff: 'build', lag: y - x };
+  }
+  return { diff: 'prerelease', lag: null };
+}
+
+/**
+ * Classifies a declared range: floating (prerelease or stable), open-ended ("1.2.3" / "[1.2.3, )"),
+ * bounded, or pinned (an exact range, written by NuGet as "[1.2.3, 1.2.3]", or centrally managed).
+ * A float is reported as floating even when centrally managed.
+ */
+export function rangeKind(text: string, centrallyManaged = false): RangeKind {
+  const r = parseRange(text);
+  if (!r || text.trim() === '') return centrallyManaged ? 'pinned' : 'unknown';
+  if (r.float) return r.float.releasePrefix !== undefined ? 'floatingPrerelease' : 'floatingStable';
+  if (centrallyManaged) return 'pinned';
+  if (r.min && r.max && r.minInclusive && r.maxInclusive && compareVersions(r.min, r.max) === 0) return 'pinned';
+  if (r.min && !r.max) return 'openEnded';
+  return 'bounded';
+}
+
+/**
+ * The version a range asks for: its lower bound, or the resolved version when the range floats and
+ * the resolved version satisfies it (a satisfied float picked the newest match, so it is never stale).
+ * undefined when the range has no lower bound or does not parse.
+ */
+export function requestedVersion(text: string, resolved: string): string | undefined {
+  const r = parseRange(text);
+  if (!r || !r.min) return undefined;
+  if (r.float) {
+    const v = parseVersion(resolved);
+    if (v && satisfies(r, v)) return normalizeVersion(resolved);
+  }
+  return formatVersion(r.min);
 }

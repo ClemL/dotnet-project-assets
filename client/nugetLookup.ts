@@ -3,7 +3,7 @@
 
 import { mapWithConcurrency } from '../lib/concurrency';
 import type { IdKey, NugetLookup } from '../lib/types';
-import { versionKey } from '../lib/version';
+import { versionKey } from '../lib/versions';
 import { browserStore, keysWithPrefix, readJson, removeKey, STORAGE_PREFIX, type KeyValueStore } from './storage';
 
 export const LOOKUP_CONCURRENCY = 8;

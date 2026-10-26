@@ -14,7 +14,7 @@ import type {
   TargetGraph,
   TfmDuplicate,
 } from './types';
-import { compareVersions, compareVersionStrings, parseVersion, rangeMin, satisfiesText } from './version';
+import { compareVersions, compareVersionStrings, parseVersion, rangeMin, satisfiesText } from './versions';
 
 const byText = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 

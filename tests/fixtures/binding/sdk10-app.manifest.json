@@ -1,0 +1,1284 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-10-26T12:45:12.0000000Z",
+  "tool": "Export-AssemblyManifest.ps1",
+  "appName": "App",
+  "roots": [
+    "C:\\dev\\git\\Demo\\App\\bin\\Release\\net10.0",
+    "C:\\dev\\git\\Demo\\plugins"
+  ],
+  "frameworks": [
+    {
+      "name": "Microsoft.NETCore.App",
+      "requestedVersion": "10.0.0",
+      "usedVersion": "10.0.13",
+      "exact": false,
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\10.0.13"
+    }
+  ],
+  "skipped": {
+    "nonManaged": 1,
+    "netmodule": 0,
+    "refFolder": 1,
+    "otherRid": 1,
+    "unreadable": 0
+  },
+  "assemblies": [
+    {
+      "path": "App.dll",
+      "root": 0,
+      "name": "App",
+      "version": "1.0.0.0",
+      "publicKeyToken": null,
+      "fileVersion": "1.0.0.0",
+      "culture": null,
+      "rid": null,
+      "references": [
+        {
+          "name": "System.Runtime",
+          "version": "10.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.Console",
+          "version": "10.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "Lib",
+          "version": "2.0.0.0",
+          "publicKeyToken": null,
+          "culture": null
+        }
+      ]
+    },
+    {
+      "path": "Lib.dll",
+      "root": 0,
+      "name": "Lib",
+      "version": "2.0.0.0",
+      "publicKeyToken": null,
+      "fileVersion": "2.0.0.0",
+      "culture": null,
+      "rid": null,
+      "references": [
+        {
+          "name": "System.Runtime",
+          "version": "10.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        }
+      ]
+    },
+    {
+      "path": "runtimes/win/lib/net8.0/System.Diagnostics.EventLog.dll",
+      "root": 0,
+      "name": "System.Diagnostics.EventLog",
+      "version": "8.0.0.0",
+      "publicKeyToken": "cc7b13ffcd2ddd51",
+      "fileVersion": "8.0.23.53103",
+      "culture": null,
+      "rid": "win",
+      "references": [
+        {
+          "name": "System.Runtime",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.Runtime.InteropServices",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.ComponentModel.TypeConverter",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.ComponentModel.Primitives",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.Threading",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "Microsoft.Win32.Registry",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.Collections",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.Collections.Specialized",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "Microsoft.Win32.Primitives",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.Threading.ThreadPool",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.Diagnostics.TraceSource",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.Security.Principal.Windows",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.Threading.Thread",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        }
+      ]
+    },
+    {
+      "path": "runtimes/win/lib/net8.0/System.Diagnostics.EventLog.Messages.dll",
+      "root": 0,
+      "name": "System.Diagnostics.EventLog.Messages",
+      "version": "8.0.0.0",
+      "publicKeyToken": "cc7b13ffcd2ddd51",
+      "fileVersion": "8.0.23.53103",
+      "culture": null,
+      "rid": "win",
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.0.0.0",
+          "publicKeyToken": "cc7b13ffcd2ddd51",
+          "culture": null
+        }
+      ]
+    },
+    {
+      "path": "System.Diagnostics.EventLog.dll",
+      "root": 0,
+      "name": "System.Diagnostics.EventLog",
+      "version": "8.0.0.0",
+      "publicKeyToken": "cc7b13ffcd2ddd51",
+      "fileVersion": "8.0.23.53103",
+      "culture": null,
+      "rid": null,
+      "references": [
+        {
+          "name": "System.Runtime",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.Runtime.InteropServices",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.ComponentModel.TypeConverter",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.ComponentModel.Primitives",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.Diagnostics.TraceSource",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        },
+        {
+          "name": "System.Security.Principal.Windows",
+          "version": "8.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        }
+      ]
+    },
+    {
+      "path": "Lib.dll",
+      "root": 1,
+      "name": "Lib",
+      "version": "1.0.0.0",
+      "publicKeyToken": null,
+      "fileVersion": "1.0.0.0",
+      "culture": null,
+      "rid": null,
+      "references": [
+        {
+          "name": "System.Runtime",
+          "version": "10.0.0.0",
+          "publicKeyToken": "b03f5f7f11d50a3a",
+          "culture": null
+        }
+      ]
+    }
+  ],
+  "framework": [
+    {
+      "name": "Microsoft.CSharp",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "Microsoft.VisualBasic.Core",
+      "version": "15.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "Microsoft.VisualBasic",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "Microsoft.Win32.Primitives",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "Microsoft.Win32.Registry",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "mscorlib",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "netstandard",
+      "version": "2.1.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.AppContext",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Buffers",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Collections.Concurrent",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Collections",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Collections.Immutable",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Collections.NonGeneric",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Collections.Specialized",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.ComponentModel.Annotations",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.ComponentModel.DataAnnotations",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "31bf3856ad364e35"
+    },
+    {
+      "name": "System.ComponentModel",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.ComponentModel.EventBasedAsync",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.ComponentModel.Primitives",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.ComponentModel.TypeConverter",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Configuration",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Console",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Core",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.Data.Common",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Data.DataSetExtensions",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.Data",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.Diagnostics.Contracts",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Diagnostics.Debug",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Diagnostics.DiagnosticSource",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Diagnostics.FileVersionInfo",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Diagnostics.Process",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Diagnostics.StackTrace",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Diagnostics.TextWriterTraceListener",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Diagnostics.Tools",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Diagnostics.TraceSource",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Diagnostics.Tracing",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.Drawing",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Drawing.Primitives",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Dynamic.Runtime",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Formats.Asn1",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Formats.Tar",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Globalization.Calendars",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Globalization",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Globalization.Extensions",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.IO.Compression.Brotli",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.IO.Compression",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.IO.Compression.FileSystem",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.IO.Compression.ZipFile",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.IO",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.IO.FileSystem.AccessControl",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.IO.FileSystem",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.IO.FileSystem.DriveInfo",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.IO.FileSystem.Primitives",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.IO.FileSystem.Watcher",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.IO.IsolatedStorage",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.IO.MemoryMappedFiles",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.IO.Pipelines",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.IO.Pipes.AccessControl",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.IO.Pipes",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.IO.UnmanagedMemoryStream",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Linq.AsyncEnumerable",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Linq",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Linq.Expressions",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Linq.Parallel",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Linq.Queryable",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Memory",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Net",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Net.Http",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Net.Http.Json",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Net.HttpListener",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Net.Mail",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Net.NameResolution",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Net.NetworkInformation",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Net.Ping",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Net.Primitives",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Net.Quic",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Net.Requests",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Net.Security",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Net.ServerSentEvents",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Net.ServicePoint",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Net.Sockets",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Net.WebClient",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Net.WebHeaderCollection",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Net.WebProxy",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Net.WebSockets.Client",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Net.WebSockets",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Numerics",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.Numerics.Vectors",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.ObjectModel",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Private.CoreLib",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "7cec85d7bea7798e"
+    },
+    {
+      "name": "System.Private.DataContractSerialization",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Private.Uri",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Private.Xml",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Private.Xml.Linq",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Reflection.DispatchProxy",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Reflection",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Reflection.Emit",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Reflection.Emit.ILGeneration",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Reflection.Emit.Lightweight",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Reflection.Extensions",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Reflection.Metadata",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Reflection.Primitives",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Reflection.TypeExtensions",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Resources.Reader",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Resources.ResourceManager",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Resources.Writer",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime.CompilerServices.Unsafe",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime.CompilerServices.VisualC",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime.Extensions",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime.Handles",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime.InteropServices",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime.InteropServices.JavaScript",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime.InteropServices.RuntimeInformation",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime.Intrinsics",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Runtime.Loader",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime.Numerics",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime.Serialization",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.Runtime.Serialization.Formatters",
+      "version": "8.1.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime.Serialization.Json",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime.Serialization.Primitives",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Runtime.Serialization.Xml",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security.AccessControl",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security.Claims",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security.Cryptography.Algorithms",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security.Cryptography.Cng",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security.Cryptography.Csp",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security.Cryptography",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security.Cryptography.Encoding",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security.Cryptography.OpenSsl",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security.Cryptography.Primitives",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security.Cryptography.X509Certificates",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security.Principal",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security.Principal.Windows",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Security.SecureString",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.ServiceModel.Web",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "31bf3856ad364e35"
+    },
+    {
+      "name": "System.ServiceProcess",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Text.Encoding.CodePages",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Text.Encoding",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Text.Encoding.Extensions",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Text.Encodings.Web",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Text.Json",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Text.RegularExpressions",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Threading.AccessControl",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Threading.Channels",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Threading",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Threading.Overlapped",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Threading.Tasks.Dataflow",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Threading.Tasks",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Threading.Tasks.Extensions",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Threading.Tasks.Parallel",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Threading.Thread",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Threading.ThreadPool",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Threading.Timer",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Transactions",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.Transactions.Local",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.ValueTuple",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Web",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Web.HttpUtility",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "cc7b13ffcd2ddd51"
+    },
+    {
+      "name": "System.Windows",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Xml",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.Xml.Linq",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.Xml.ReaderWriter",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Xml.Serialization",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b77a5c561934e089"
+    },
+    {
+      "name": "System.Xml.XDocument",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Xml.XmlDocument",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Xml.XmlSerializer",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Xml.XPath",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "System.Xml.XPath.XDocument",
+      "version": "10.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "b03f5f7f11d50a3a"
+    },
+    {
+      "name": "WindowsBase",
+      "version": "4.0.0.0",
+      "framework": "Microsoft.NETCore.App",
+      "publicKeyToken": "31bf3856ad364e35"
+    }
+  ]
+}

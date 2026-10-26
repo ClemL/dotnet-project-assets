@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-10-26T12:00:00Z",
+  "appName": "Rx.Api",
+  "roots": ["C:\\dev\\git\\Rx\\Rx.Api\\bin\\Debug\\net10.0", "C:\\dev\\git\\Rx\\plugins"],
+  "frameworks": [{ "name": "Microsoft.NETCore.App", "requestedVersion": "10.0.0", "usedVersion": "10.0.13", "exact": false, "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\10.0.13" }],
+  "assemblies": [
+    { "path": "Rx.Api.dll", "root": 0, "name": "Rx.Api", "version": "1.0.0.0", "publicKeyToken": null, "fileVersion": "1.0.0.0",
+      "references": [
+        { "name": "System.Runtime", "version": "10.0.0.0", "publicKeyToken": "b03f5f7f11d50a3a" },
+        { "name": "Model.Import", "version": "10.0.0.33950", "publicKeyToken": null },
+        { "name": "Model.Missing", "version": "1.0.0.0", "publicKeyToken": null },
+        { "name": "Signed.Lib", "version": "2.0.0.0", "publicKeyToken": "aaaaaaaaaaaaaaaa" },
+        { "name": "Major.Lib", "version": "2.0.0.0", "publicKeyToken": null },
+        { "name": "Minor.Lib", "version": "2.0.0.0", "publicKeyToken": null },
+        { "name": "Orphan.Lib", "version": "1.0.0.0", "publicKeyToken": null },
+        { "name": "System.Text.Json", "version": "8.0.0.0", "publicKeyToken": "cc7b13ffcd2ddd51" },
+        { "name": "Microsoft.Data.SqlClient", "version": "6.0.0.0", "publicKeyToken": "23ec7fc2d6eaa4a5" }
+      ] },
+    { "path": "Model.Import.dll", "root": 0, "name": "Model.Import", "version": "10.0.0.33950", "publicKeyToken": null, "fileVersion": "10.0.0.33950",
+      "references": [ { "name": "System.Runtime", "version": "8.0.0.0", "publicKeyToken": "b03f5f7f11d50a3a" } ] },
+    { "path": "Plugin.Excel.dll", "root": 0, "name": "Plugin.Excel", "version": "10.0.0.34012", "publicKeyToken": null, "fileVersion": "10.0.0.34012",
+      "references": [ { "name": "Model.Import", "version": "10.0.0.34377", "publicKeyToken": null } ] },
+    { "path": "Signed.Lib.dll", "root": 0, "name": "Signed.Lib", "version": "2.0.0.0", "publicKeyToken": "bbbbbbbbbbbbbbbb", "fileVersion": "2.0.0.0", "references": [] },
+    { "path": "Major.Lib.dll", "root": 0, "name": "Major.Lib", "version": "3.0.0.0", "publicKeyToken": null, "fileVersion": "3.0.0.0", "references": [] },
+    { "path": "Minor.Lib.dll", "root": 0, "name": "Minor.Lib", "version": "2.1.0.0", "publicKeyToken": null, "fileVersion": "2.1.0.0", "references": [] },
+    { "path": "Orphan.Lib.dll", "root": 0, "name": "Orphan.Lib", "version": "1.0.0.0", "publicKeyToken": null, "fileVersion": "1.0.0.0", "references": [] },
+    { "path": "System.Text.Json.dll", "root": 0, "name": "System.Text.Json", "version": "8.0.0.0", "publicKeyToken": "cc7b13ffcd2ddd51", "fileVersion": "8.0.1024.46610", "references": [] },
+    { "path": "Shared.Util.dll", "root": 0, "name": "Shared.Util", "version": "1.0.0.0", "publicKeyToken": null, "fileVersion": "1.0.0.0", "references": [] },
+    { "path": "de\\Rx.Api.resources.dll", "root": 0, "name": "Rx.Api.resources", "version": "1.0.0.0", "publicKeyToken": null, "fileVersion": "1.0.0.0", "culture": "de",
+      "references": [ { "name": "Rx.Api.Missing.Satellite.Dep", "version": "1.0.0.0", "publicKeyToken": null } ] },
+    { "path": "Plugin.Dynamic.dll", "root": 1, "name": "Plugin.Dynamic", "version": "10.0.0.34400", "publicKeyToken": null, "fileVersion": "10.0.0.34400",
+      "references": [
+        { "name": "Model.Import", "version": "10.0.0.34377", "publicKeyToken": null },
+        { "name": "Shared.Util", "version": "1.2.0.0", "publicKeyToken": null }
+      ] },
+    { "path": "Shared.Util.dll", "root": 1, "name": "Shared.Util", "version": "1.2.0.0", "publicKeyToken": null, "fileVersion": "1.2.0.0", "references": [] }
+  ],
+  "framework": [
+    { "name": "System.Runtime", "version": "10.0.0.0", "framework": "Microsoft.NETCore.App", "publicKeyToken": "b03f5f7f11d50a3a" },
+    { "name": "System.Text.Json", "version": "10.0.0.0", "framework": "Microsoft.NETCore.App", "publicKeyToken": "cc7b13ffcd2ddd51" }
+  ]
+}

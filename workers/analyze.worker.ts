@@ -1,7 +1,10 @@
-// Web Worker: reads and parses assets files, runs the analysis, and recomputes classification and
-// build order on request. Holds the latest analysis so classification requests stay small.
+// Web Worker: reads and parses assets files, runs the analysis, recomputes classification and
+// build order on request, and runs the binding check. Holds the latest analysis so classification
+// requests stay small.
 
 import { analyzeModels, classifyAndOrder } from '../lib/analyze';
+import { analyzeBindingInputs } from '../lib/binding';
+import type { BindingInputText } from '../lib/bindingInputs';
 import { assignLabels, parseAssetsJson } from '../lib/parse';
 import { mapWithConcurrency } from '../lib/concurrency';
 import { parseNupkgMetadata, parsePackagesFolderPath } from '../lib/metadata';
@@ -45,7 +48,7 @@ async function handle(req: WorkerRequest): Promise<void> {
     }
     case 'classify': {
       if (!current) throw new Error('Nothing analyzed yet.');
-      post({ type: 'classified', requestId: req.requestId, result: classifyAndOrder(current, req.input, req.buildOrder) });
+      post({ type: 'classified', requestId: req.requestId, result: classifyAndOrder(current, req.input, req.buildOrder, req.skew) });
       return;
     }
     case 'loadPackagesFolder': {
@@ -73,6 +76,21 @@ async function handle(req: WorkerRequest): Promise<void> {
         if (done % 250 === 0) post({ type: 'progress', requestId: req.requestId, stage: 'Reading metadata', done, total });
       });
       post({ type: 'packagesFolderLoaded', requestId: req.requestId, result });
+      return;
+    }
+    case 'binding': {
+      const texts: BindingInputText[] = [];
+      const unreadable: { inputId: string; fileName: string; error: string }[] = [];
+      for (const input of req.inputs) {
+        try {
+          texts.push({ inputId: input.inputId, fileName: input.fileName, text: input.text ?? (input.file ? await input.file.text() : '') });
+        } catch (e) {
+          unreadable.push({ inputId: input.inputId, fileName: input.fileName, error: `Could not read file: ${e instanceof Error ? e.message : String(e)}` });
+        }
+      }
+      const result = analyzeBindingInputs(texts);
+      result.inputs.push(...unreadable);
+      post({ type: 'bindingAnalyzed', requestId: req.requestId, result });
       return;
     }
   }

@@ -1,0 +1,52 @@
+{
+  "runtimeTarget": { "name": ".NETCoreApp,Version=v10.0", "signature": "" },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "Rx.Api/1.0.0": {
+        "dependencies": { "Model.Import": "10.0.0-13615", "Plugin.Excel": "10.0.0-13406" },
+        "runtime": { "Rx.Api.dll": {} }
+      },
+      "Model.Import/10.0.0-13615": {
+        "runtime": { "lib/net10.0/Model.Import.dll": { "assemblyVersion": "10.0.0.33950", "fileVersion": "10.0.0.33950" } }
+      },
+      "Model.Ref/10.0.0-13570": {
+        "runtime": { "lib/net10.0/Model.Ref.dll": { "assemblyVersion": "10.0.0.34100", "fileVersion": "10.0.0.34100" } }
+      },
+      "Model.Drug/10.0.0-13366": {
+        "runtime": { "lib/net10.0/Model.Drug.dll": { "assemblyVersion": "10.0.0.33000", "fileVersion": "10.0.0.33000" } }
+      },
+      "Plugin.Excel/10.0.0-13406": {
+        "dependencies": { "Model.Import": "10.0.0-13388" },
+        "runtime": { "lib/net10.0/Plugin.Excel.dll": { "assemblyVersion": "10.0.0.34012", "fileVersion": "10.0.0.34012" } }
+      },
+      "Signed.Lib/2.0.0": {
+        "runtime": { "lib/net8.0/Signed.Lib.dll": { "assemblyVersion": "2.0.0.0", "fileVersion": "2.0.0.0" } }
+      },
+      "Major.Lib/3.0.0": {
+        "runtime": { "lib/net8.0/Major.Lib.dll": { "assemblyVersion": "3.0.0.0", "fileVersion": "3.0.0.0" } }
+      },
+      "Minor.Lib/2.1.0": {
+        "runtime": { "lib/net8.0/Minor.Lib.dll": { "assemblyVersion": "2.1.0.0", "fileVersion": "2.1.0.0" } }
+      },
+      "Shared.Util/1.0.0": {
+        "runtime": { "lib/net8.0/Shared.Util.dll": { "assemblyVersion": "1.0.0.0", "fileVersion": "1.0.0.0" } }
+      },
+      "System.Text.Json/8.0.5": {
+        "runtime": { "lib/net8.0/System.Text.Json.dll": { "assemblyVersion": "8.0.0.0", "fileVersion": "8.0.1024.46610" } }
+      }
+    }
+  },
+  "libraries": {
+    "Rx.Api/1.0.0": { "type": "project", "serviceable": false, "sha512": "" },
+    "Model.Import/10.0.0-13615": { "type": "package", "serviceable": true, "sha512": "sha512-x", "path": "model.import/10.0.0-13615" },
+    "Model.Ref/10.0.0-13570": { "type": "package", "serviceable": true, "sha512": "sha512-x", "path": "model.ref/10.0.0-13570" },
+    "Model.Drug/10.0.0-13366": { "type": "package", "serviceable": true, "sha512": "sha512-x", "path": "model.drug/10.0.0-13366" },
+    "Plugin.Excel/10.0.0-13406": { "type": "package", "serviceable": true, "sha512": "sha512-x", "path": "plugin.excel/10.0.0-13406" },
+    "Signed.Lib/2.0.0": { "type": "package", "serviceable": true, "sha512": "sha512-x", "path": "signed.lib/2.0.0" },
+    "Major.Lib/3.0.0": { "type": "package", "serviceable": true, "sha512": "sha512-x", "path": "major.lib/3.0.0" },
+    "Minor.Lib/2.1.0": { "type": "package", "serviceable": true, "sha512": "sha512-x", "path": "minor.lib/2.1.0" },
+    "Shared.Util/1.0.0": { "type": "package", "serviceable": true, "sha512": "sha512-x", "path": "shared.util/1.0.0" },
+    "System.Text.Json/8.0.5": { "type": "package", "serviceable": true, "sha512": "sha512-x", "path": "system.text.json/8.0.5" }
+  }
+}

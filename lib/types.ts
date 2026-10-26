@@ -22,6 +22,39 @@ export interface TargetNode {
   dependencies: Record<string, string>;
 }
 
+/** One entry of project.frameworks[alias].dependencies, as written by NuGet. */
+export interface DeclaredDep {
+  id: string;
+  /** "version" exactly as written, e.g. "[10.0.*-*, )"; empty when absent. */
+  range: string;
+  /** versionCentrallyManaged (written only when true). */
+  centrallyManaged: boolean;
+  /** autoReferenced (written only when true), e.g. implicit SDK references. */
+  autoReferenced: boolean;
+  /** versionOverride under Central Package Management. */
+  versionOverride?: string;
+}
+
+export type TriState = 'enabled' | 'disabled' | 'unknown';
+
+/**
+ * Restore settings from project.restore. NuGet writes these flags only when they are set (true),
+ * so an absent flag is "unknown", never "disabled".
+ */
+export interface RestoreFlags {
+  /** restoreLockProperties.restorePackagesWithLockFile (a string: "true" / "false"). */
+  lockFile: TriState;
+  /** restoreLockProperties.restoreLockedMode. */
+  lockedMode: TriState;
+  lockFilePath?: string;
+  /** centralPackageVersionsManagementEnabled. */
+  cpm: TriState;
+  /** Where the CPM state came from: the restore flag, versionCentrallyManaged on a dependency, or nothing. */
+  cpmEvidence: 'restore' | 'dependency' | 'none';
+  /** CentralPackageTransitivePinningEnabled (capital C in the file). */
+  transitivePinning: TriState;
+}
+
 export interface DirectDep {
   id: string;
   /** Requested range as a NuGet range string ("[1.0.0, )"); empty for project references. */
@@ -37,6 +70,8 @@ export interface TargetGraph {
   rid?: string;
   nodes: Record<IdKey, TargetNode>;
   roots: DirectDep[];
+  /** project.frameworks[alias].dependencies for this target's framework (empty when absent). */
+  declared: DeclaredDep[];
 }
 
 export interface ProjectModel {
@@ -49,6 +84,7 @@ export interface ProjectModel {
   projectVersion: string;
   /** Keys of project.restore.sources. */
   sources: string[];
+  restoreFlags: RestoreFlags;
   targets: TargetGraph[];
   warnings: string[];
 }
@@ -350,4 +386,391 @@ export interface AnalysisResult {
   files: ScopeAnalysis[];
   packages: PackageRef[];
   suggestions: { internalPrefixes: PrefixSuggestion[]; internalFeeds: string[] };
+}
+
+// ---------------------------------------------------------------------------
+// Binding check (lib/bindingInputs.ts, lib/binding.ts)
+// ---------------------------------------------------------------------------
+
+export type BindingInputKind = 'deps' | 'manifest' | 'runtimeconfig';
+
+/** One runtime asset of a deps.json library. deps.json records file paths, not assembly names. */
+export interface DepsAsset {
+  path: string;
+  /** File name without ".dll". */
+  assemblyName: string;
+  /** null when the entry has no assemblyVersion field ("unknown"). */
+  assemblyVersion: string | null;
+  fileVersion: string | null;
+  /** From runtimeTargets ("win", "win-x64"); undefined for plain runtime assets. */
+  rid?: string;
+}
+
+export interface AssemblyOwner {
+  packageId: string;
+  packageVersion: string;
+  /** deps.json libraries[].type: "package", "project", or "reference". */
+  packageType: string;
+  assemblyVersion: string | null;
+  fileVersion: string | null;
+  path: string;
+  rid?: string;
+  depsFile: string;
+}
+
+export interface DepsGap {
+  packageId: string;
+  packageVersion: string;
+  packageType: string;
+  path: string;
+  /** True for the application's own entry, which never carries an assemblyVersion. */
+  expected: boolean;
+}
+
+export interface DepsModel {
+  inputId: string;
+  fileName: string;
+  /** runtimeTarget.name, e.g. ".NETCoreApp,Version=v10.0" or ".NETCoreApp,Version=v10.0/win-x64". */
+  runtimeTarget: string;
+  /** The application's deps.json: decides what the default load context can load. */
+  primary: boolean;
+  /** Id of the application's own entry, when identified. */
+  appId?: string;
+  libraryCount: number;
+  /** "<id-lower>/<version-lower>" → runtime assets. */
+  byPackage: Record<string, DepsAsset[]>;
+  /** Assembly name (lowercase) → owning packages. More than one entry means two packages ship the same file. */
+  byAssembly: Record<string, AssemblyOwner[]>;
+  gaps: DepsGap[];
+  warnings: string[];
+}
+
+export interface AssemblyRefInfo {
+  name: string;
+  version: string;
+  publicKeyToken: string | null;
+  culture?: string | null;
+}
+
+export interface ManifestAssembly {
+  /** Path relative to roots[root] (or absolute). */
+  path: string;
+  root: number;
+  name: string;
+  version: string;
+  publicKeyToken: string | null;
+  fileVersion: string | null;
+  culture?: string | null;
+  rid?: string | null;
+  references: AssemblyRefInfo[];
+}
+
+export interface FrameworkAssembly {
+  name: string;
+  version: string;
+  framework: string;
+  publicKeyToken?: string | null;
+}
+
+export interface FrameworkFolder {
+  name: string;
+  requestedVersion: string;
+  /** null when no folder with the same major.minor was installed. */
+  usedVersion: string | null;
+  exact: boolean;
+  path: string | null;
+}
+
+export interface AssemblyManifest {
+  schema: 1;
+  generatedAt: string;
+  appName?: string;
+  roots: string[];
+  assemblies: ManifestAssembly[];
+  framework: FrameworkAssembly[];
+  frameworks?: FrameworkFolder[];
+  skipped?: Record<string, number>;
+  source: 'script' | 'dll-upload';
+  /** Input files merged into this manifest. */
+  fileNames: string[];
+}
+
+export interface RuntimeConfigInfo {
+  fileName: string;
+  frameworks: { name: string; version: string }[];
+  rollForward?: string;
+  selfContained: boolean;
+}
+
+export type BindingClass = 'MISSING' | 'TOO_OLD' | 'TOKEN_MISMATCH' | 'ROLL_FORWARD_MAJOR' | 'ROLL_FORWARD' | 'EXACT' | 'FRAMEWORK_ASSUMED';
+export type BindingSeverity = 'error' | 'warning' | 'info' | 'ok';
+export type TargetSource = 'manifest' | 'framework' | 'framework-assumed';
+
+export interface PackageLink {
+  packageId: string;
+  packageVersion: string;
+  packageType: string;
+  depsFile: string;
+  assemblyVersionInDeps: string | null;
+}
+
+export interface BindingTarget {
+  name: string;
+  /** Version the reference binds to; for "framework-assumed" there is none. */
+  version?: string;
+  publicKeyToken: string | null;
+  source: TargetSource;
+  path?: string;
+  root?: number;
+  framework?: string;
+}
+
+export interface BindingIssue {
+  rowId: string;
+  severity: BindingSeverity;
+  classification: BindingClass;
+  requester: { name: string; version: string; path: string; root: number; publicKeyToken: string | null };
+  /** undefined → "outside deps.json (dynamically loaded?)". */
+  requesterPackage?: PackageLink;
+  reference: AssemblyRefInfo;
+  target?: BindingTarget;
+  targetPackage?: PackageLink;
+  /** Target is a shared-framework assembly (listed or assumed). */
+  isFramework: boolean;
+  hint?: string;
+  notes: string[];
+}
+
+export interface AssemblyCopy {
+  path: string;
+  root: number;
+  rootPath: string;
+  version: string;
+  fileVersion: string | null;
+  rid?: string | null;
+}
+
+export interface AssemblyCopies {
+  key: string;
+  name: string;
+  copies: AssemblyCopy[];
+}
+
+export interface CorrelationRow {
+  packageId: string;
+  packageVersion: string;
+  assembly: string;
+  assemblyVersion: string | null;
+  fileVersion: string | null;
+  depsFile: string;
+  nonMonotonic: boolean;
+  /** Packages that invert the order: lower package version with a higher assembly version, or the reverse. */
+  conflictsWith: { packageId: string; packageVersion: string; assemblyVersion: string }[];
+}
+
+export interface ParsedLoadError {
+  raw: string;
+  exception?: string;
+  name: string;
+  version?: string;
+  culture?: string;
+  /** undefined when the message has no PublicKeyToken part; null for "PublicKeyToken=null". */
+  publicKeyToken?: string | null;
+}
+
+export interface DeployedInfo {
+  copies: AssemblyCopy[];
+  framework?: FrameworkAssembly;
+  owners: AssemblyOwner[];
+}
+
+export interface ErrorLookupResult {
+  error: ParsedLoadError;
+  requesters: BindingIssue[];
+  /** Same name, other versions. */
+  otherVersions: { version: string; requesters: string[] }[];
+  deployed: DeployedInfo;
+  verdict: string;
+}
+
+export interface BindingInputSummary {
+  inputId: string;
+  fileName: string;
+  kind?: BindingInputKind;
+  error?: string;
+}
+
+export interface BindingResult {
+  inputs: BindingInputSummary[];
+  deps: DepsModel[];
+  manifest?: AssemblyManifest;
+  runtimeConfig?: RuntimeConfigInfo;
+  /** Required inputs that are absent (deps, manifest). */
+  missing: BindingInputKind[];
+  issues: BindingIssue[];
+  copies: AssemblyCopies[];
+  counts: Record<BindingSeverity, number>;
+  warnings: string[];
+}
+
+// ---------------------------------------------------------------------------
+// Version skew (lib/versions.ts, lib/skew.ts, lib/floating.ts)
+// ---------------------------------------------------------------------------
+
+/** How two versions differ: 'build' when a lag is computable, otherwise the highest differing part. */
+export type VersionDiff = 'equal' | 'build' | 'major' | 'minor' | 'patch' | 'revision' | 'prerelease';
+
+export type RangeKind = 'floatingPrerelease' | 'floatingStable' | 'openEnded' | 'bounded' | 'pinned' | 'unknown';
+
+export type Severity = 'none' | 'info' | 'low' | 'medium' | 'high';
+
+export type RebuildSeverity = 'low' | 'medium' | 'high';
+
+export interface SkewSettings {
+  /** Regex source; capture group 1 is the build number. */
+  buildNumberPattern: string;
+  /** Minimum spread/lag for each severity. */
+  thresholds: { low: number; medium: number; high: number };
+  rebuildMinSeverity: RebuildSeverity;
+  cascade: boolean;
+  includePublic: boolean;
+}
+
+export interface SkewEdge {
+  target: string;
+  tfm: string;
+  childKey: IdKey;
+  /** Casing from the resolved targets key. */
+  child: string;
+  resolvedVersion: string;
+  childOrigin?: Origin;
+  parentKey: IdKey;
+  parent: string;
+  parentVersion: string;
+  parentOrigin?: Origin;
+  /** Range exactly as written. */
+  requestedRange: string;
+  /** Lower bound; the resolved version for a satisfied float; undefined without a lower bound. */
+  requestedVersion?: string;
+  requestedBuild: number | null;
+  resolvedBuild: number | null;
+  diff: VersionDiff;
+  /** resolved build − requested build; null → "n/a (semver)". */
+  lag: number | null;
+  stale: boolean;
+  severity: Severity;
+  isDirect: boolean;
+  isFloating: boolean;
+  /** Projects (file labels) whose graph contains this edge. */
+  projects: string[];
+}
+
+export interface RequestedGroup {
+  requestedVersion: string;
+  build: number | null;
+  requesters: { parent: string; parentKey: IdKey; isDirect: boolean; range: string }[];
+}
+
+export interface SkewRow {
+  rowId: string;
+  target: string;
+  tfm: string;
+  childKey: IdKey;
+  child: string;
+  origin?: Origin;
+  resolvedVersion: string;
+  resolvedBuild: number | null;
+  /** Ascending by requested version. */
+  groups: RequestedGroup[];
+  /** Every in-scope edge into the child, for the expanded view. */
+  edges: SkewEdge[];
+  oldestRequested: string;
+  oldestRequesters: string[];
+  oldestRequesterKeys: IdKey[];
+  spread: number | null;
+  spreadDiff: VersionDiff;
+  severity: Severity;
+  /** Projects that resolve this version (merged view). */
+  shippedBy: string[];
+  /** Other versions of the same package resolved by other projects for the same target (cross-project drift). */
+  drift: string[];
+}
+
+export interface ConsumerRow {
+  parentKey: IdKey;
+  parent: string;
+  versions: string[];
+  origin?: Origin;
+  isRootProject: boolean;
+  staleEdges: number;
+  oldestInRow: number;
+  maxLag: number | null;
+  medianLag: number | null;
+  worstDiff: VersionDiff;
+  severity: Severity;
+  action: string;
+}
+
+export interface RebuildStep {
+  wave: number;
+  key: IdKey;
+  id: string;
+  origin?: Origin;
+  reason: 'stale' | 'cascade';
+  /** stale: the outdated dependencies; cascade: the rebuilt packages it consumes. */
+  because: string[];
+}
+
+export interface RebuildPlan {
+  minSeverity: RebuildSeverity;
+  cascade: boolean;
+  steps: RebuildStep[];
+  /** Cycles among the rebuild set (no complete order exists). */
+  cycles: IdKey[][];
+  blocked: IdKey[];
+}
+
+export interface CasingNote {
+  key: IdKey;
+  /** Casing of the resolved targets key. */
+  display: string;
+  variants: { spelling: string; seenIn: string[] }[];
+}
+
+export interface SkewReport {
+  internal: SkewRow[];
+  public: SkewRow[];
+  consumers: ConsumerRow[];
+  outlier?: { consumer: ConsumerRow; message: string };
+  rebuild: RebuildPlan;
+  casing: CasingNote[];
+  counts: Record<'high' | 'medium' | 'low', number>;
+  warnings: string[];
+}
+
+export interface FloatingRef {
+  project: string;
+  target: string;
+  key: IdKey;
+  id: string;
+  range: string;
+  kind: RangeKind;
+  severity: Severity;
+  centrallyManaged: boolean;
+  autoReferenced: boolean;
+  versionOverride?: string;
+  resolvedVersion?: string;
+  origin?: Origin;
+  /** Internal consumers that request an older version than the float resolved to. */
+  olderConsumers?: { min: string; max: string; parents: string[]; rowId?: string };
+  note?: string;
+}
+
+export interface FloatingReport {
+  refs: FloatingRef[];
+  restore: { project: string; flags: RestoreFlags }[];
+  floatingCount: number;
+  /** Floating references exist and at least one of their projects has no lock file detected. */
+  recommend: boolean;
+  snippets: { lockFile: string; cpm: string };
 }

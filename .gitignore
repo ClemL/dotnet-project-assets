@@ -7,3 +7,7 @@ next-env.d.ts
 .vercel
 .env*
 /results/
+
+# Real inputs for golden tests (client data; never commit)
+/tests/fixtures/real/
+/fixtures/real/

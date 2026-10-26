@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-10-26T12:00:00Z",
+  "appName": "Rx.Api",
+  "roots": ["C:\\dev\\git\\Rx\\Rx.Api\\bin\\Debug\\net10.0"],
+  "assemblies": [
+    { "path": "Rx.Api.dll", "root": 0, "name": "Rx.Api", "version": "1.0.0.0", "publicKeyToken": null, "fileVersion": "1.0.0.0",
+      "references": [
+        { "name": "System.Text.Json", "version": "10.0.0.0", "publicKeyToken": "cc7b13ffcd2ddd51" },
+        { "name": "netstandard", "version": "2.0.0.0", "publicKeyToken": "cc7b13ffcd2ddd51" },
+        { "name": "Contoso.Missing", "version": "1.0.0.0", "publicKeyToken": null }
+      ] }
+  ],
+  "framework": []
+}

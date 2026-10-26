@@ -2,19 +2,25 @@
 
 import type { BuildOrderOptions } from './analyze';
 import { ORIGIN_LABELS } from './classify';
+import { RANGE_KIND_LABEL } from './floating';
 import type {
   AnalyzeOptions,
   BuildOrderView,
   ClassifyOutput,
   ClassifySettings,
   DependencyRow,
+  FloatingReport,
   IdKey,
   MergedGraph,
   ParseError,
   ProjectModel,
+  RequestedGroup,
   ScopeAnalysis,
+  SkewReport,
+  SkewRow,
+  SkewSettings,
 } from './types';
-import { describeRange } from './version';
+import { describeRange } from './versions';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -95,6 +101,47 @@ export function buildOrderCsv(view: BuildOrderView, graph: MergedGraph, classifi
   return toCsv(buildOrderTable(view, graph, classification));
 }
 
+/** One row per stale edge, internal rows first, then public ones (when included). */
+export function skewEdgeTable(skew: SkewReport): string[][] {
+  const rows: string[][] = [['tfm', 'child', 'resolvedVersion', 'parent', 'parentVersion', 'requestedRange', 'requestedVersion', 'lag', 'severity', 'isDirect', 'isFloating', 'projects']];
+  for (const row of [...skew.internal, ...skew.public]) {
+    for (const e of row.edges) {
+      if (!e.stale) continue;
+      rows.push([
+        e.tfm,
+        e.child,
+        e.resolvedVersion,
+        e.parent,
+        e.parentVersion,
+        e.requestedRange,
+        e.requestedVersion ?? '',
+        e.lag !== null ? String(e.lag) : 'n/a (semver)',
+        e.severity,
+        String(e.isDirect),
+        String(e.isFloating),
+        e.projects.join('; '),
+      ]);
+    }
+  }
+  return rows;
+}
+
+export function skewCsv(skew: SkewReport): string {
+  return toCsv(skewEdgeTable(skew));
+}
+
+/** "13018 → Model.PBM" or "13615 ← direct ref [10.0.*-*, )"; full versions when no build number parses. */
+export function formatRequestedGroup(g: RequestedGroup): string {
+  const label = g.build !== null ? String(g.build) : g.requestedVersion || '(no lower bound)';
+  const parents = g.requesters.filter((r) => !r.isDirect).map((r) => r.parent);
+  const direct = g.requesters.filter((r) => r.isDirect).map((r) => `${label} ← direct ref ${r.range}`);
+  return [...(parents.length > 0 ? [`${label} → ${parents.join(', ')}`] : []), ...direct].join('; ');
+}
+
+export function formatSpread(r: Pick<SkewRow, 'spread' | 'spreadDiff'>): string {
+  return r.spread !== null ? String(r.spread) : `n/a (semver, ${r.spreadDiff})`;
+}
+
 // ---------------------------------------------------------------------------
 // Markdown / JSON
 // ---------------------------------------------------------------------------
@@ -108,6 +155,9 @@ export interface ReportInput {
   buildOrder?: BuildOrderView;
   settings: ClassifySettings;
   options: AnalyzeOptions & BuildOrderOptions;
+  skew?: SkewReport;
+  floating?: FloatingReport;
+  skewSettings?: SkewSettings;
 }
 
 function md(text: string): string {
@@ -199,6 +249,8 @@ export function markdownReport(input: ReportInput): string {
   }
   out.push('');
 
+  if (input.skew) out.push(...skewMarkdown(input.skew, input.floating, input.skewSettings), '');
+
   out.push('## Duplicates');
   out.push('');
   out.push(`### Different versions across target frameworks (${d.tfm.length})`);
@@ -258,6 +310,106 @@ export function markdownReport(input: ReportInput): string {
   return out.join('\n');
 }
 
+function skewRowsTable(rows: SkewRow[], merged: boolean): string[][] {
+  return [
+    ['Target', 'Package (resolved version)', 'Requested versions', 'Spread', 'Oldest requester', 'Severity', ...(merged ? ['Shipped by', 'Cross-project drift'] : [])],
+    ...rows.map((r) => [
+      r.target,
+      `${r.child} (${r.resolvedVersion})`,
+      r.groups.map(formatRequestedGroup).join('; '),
+      formatSpread(r),
+      r.oldestRequesters.join(', '),
+      r.severity,
+      ...(merged ? [r.shippedBy.join(', '), r.drift.length > 0 ? `also ${r.drift.join(', ')}` : ''] : []),
+    ]),
+  ];
+}
+
+export function skewMarkdown(skew: SkewReport, floating: FloatingReport | undefined, settings: SkewSettings | undefined): string[] {
+  const out: string[] = [];
+  const merged = skew.internal.some((r) => r.shippedBy.length > 1 || r.drift.length > 0);
+  out.push('## Version skew');
+  out.push('');
+  if (settings) {
+    out.push(
+      `Build-number pattern \`${settings.buildNumberPattern}\`; severity thresholds low ≥ ${settings.thresholds.low}, medium ≥ ${settings.thresholds.medium}, high ≥ ${settings.thresholds.high}; rebuild minimum ${settings.rebuildMinSeverity}; cascade ${settings.cascade ? 'on' : 'off'}; public packages ${settings.includePublic ? 'included' : 'excluded'}.`,
+    );
+    out.push('');
+  }
+  out.push('### Summary');
+  out.push('');
+  const lock = floating?.restore.map((r) => `${r.project}: lock file ${r.flags.lockFile}, CPM ${r.flags.cpm}`).join('; ') ?? 'n/a';
+  out.push(
+    mdTable([
+      ['High', 'Medium', 'Low', 'Outlier', 'Floating refs', 'Restore settings'],
+      [String(skew.counts.high), String(skew.counts.medium), String(skew.counts.low), skew.outlier?.consumer.parent ?? '(none)', String(floating?.floatingCount ?? 0), lock],
+    ]),
+  );
+  if (skew.outlier) {
+    out.push('');
+    out.push(`> **Outlier:** ${md(skew.outlier.message)}`);
+  }
+  out.push('');
+  out.push(`### Per-package skew (${skew.internal.length})`);
+  out.push('');
+  out.push(skew.internal.length > 0 ? mdTable(skewRowsTable(skew.internal, merged)) : '_No stale internal edges._');
+  out.push('');
+  if (settings?.includePublic) {
+    out.push(`### Public and system packages (${skew.public.length})`);
+    out.push('');
+    out.push(skew.public.length > 0 ? mdTable(skewRowsTable(skew.public, merged)) : '_None._');
+    out.push('');
+  }
+  out.push(`### Consumer staleness ranking (${skew.consumers.length})`);
+  out.push('');
+  out.push(
+    skew.consumers.length > 0
+      ? mdTable([
+          ['Package (version)', 'Stale edges', 'Oldest-in-row count', 'Max lag', 'Median lag', 'Recommended action'],
+          ...skew.consumers.map((c) => [`${c.parent} (${c.versions.join(', ')})`, String(c.staleEdges), String(c.oldestInRow), c.maxLag !== null ? String(c.maxLag) : `n/a (${c.worstDiff})`, c.medianLag !== null ? String(c.medianLag) : 'n/a', c.action]),
+        ])
+      : '_None._',
+  );
+  out.push('');
+  out.push(`### Rebuild plan (${skew.rebuild.steps.length})`);
+  out.push('');
+  out.push(
+    skew.rebuild.steps.length > 0
+      ? mdTable([['Wave', 'Package', 'Reason', 'Because'], ...skew.rebuild.steps.map((st) => [st.wave > 0 ? String(st.wave) : 'blocked', st.id, st.reason, st.because.join('; ')])])
+      : '_Nothing to rebuild at this minimum severity._',
+  );
+  if (skew.rebuild.cycles.length > 0) {
+    out.push('');
+    out.push(`**Cycle in the rebuild set:** ${skew.rebuild.cycles.map((c) => c.join(' → ')).join('; ')}`);
+  }
+  out.push('');
+  if (floating) {
+    out.push(`### Floating and unpinned references (${floating.floatingCount} floating)`);
+    out.push('');
+    out.push(
+      floating.refs.length > 0
+        ? mdTable([
+            ['Project', 'Target', 'Id', 'Range', 'Kind', 'Severity', 'Resolved', 'Note'],
+            ...floating.refs.map((r) => [r.project, r.target, r.id, r.range, RANGE_KIND_LABEL[r.kind] + (r.centrallyManaged ? ' (central)' : ''), r.severity, r.resolvedVersion ?? '', r.note ?? '']),
+          ])
+        : '_No direct package references._',
+    );
+    out.push('');
+    out.push(mdTable([['Project', 'Lock file', 'Locked mode', 'Central Package Management', 'Transitive pinning'], ...floating.restore.map((r) => [r.project, r.flags.lockFile, r.flags.lockedMode, `${r.flags.cpm}${r.flags.cpmEvidence === 'dependency' ? ' (from versionCentrallyManaged)' : ''}`, r.flags.transitivePinning])]));
+    out.push('');
+    out.push('"unknown" means the property is absent from project.assets.json; NuGet writes these flags only when they are set.');
+    if (floating.recommend) {
+      out.push('');
+      out.push('**Recommendation:** floating references exist and no lock file was detected. Enable packages.lock.json with RestoreLockedMode in CI, and pin internal versions with Central Package Management.');
+    }
+    out.push('');
+  }
+  if (skew.casing.length > 0) {
+    out.push(`Casing variants: ${skew.casing.map((c) => c.variants.map((v) => v.spelling).join(' / ')).join('; ')}.`);
+  }
+  return out;
+}
+
 export function jsonReport(input: ReportInput): string {
   const { scope, classification, buildOrder } = input;
   const report = {
@@ -279,6 +431,7 @@ export function jsonReport(input: ReportInput): string {
     dependencies: scope.rows.map((r) => ({ ...r, classification: classification?.byId[r.key] })),
     duplicates: scope.duplicates,
     buildOrder,
+    versionSkew: input.skew && { settings: input.skewSettings, skew: input.skew, floating: input.floating },
     classification: classification && {
       byPackage: classification.byPackage,
       proxyWarning: classification.proxyWarning,

@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { downloadText } from '@/client/download';
 import type { BuildOrderOptions } from '@/lib/analyze';
-import { buildFileName, buildOrderCsv, dependenciesCsv, jsonReport, markdownReport, type ReportInput } from '@/lib/export';
-import type { AnalyzeOptions, BuildOrderView, ClassifyOutput, ClassifySettings, ParseError, ProjectModel, ScopeAnalysis } from '@/lib/types';
+import { buildFileName, buildOrderCsv, dependenciesCsv, jsonReport, markdownReport, skewCsv, type ReportInput } from '@/lib/export';
+import type { AnalyzeOptions, BuildOrderView, ClassifyOutput, ClassifySettings, FloatingReport, ParseError, ProjectModel, ScopeAnalysis, SkewReport, SkewSettings } from '@/lib/types';
 import { Banner } from '../ui/Banner';
 import { btn, card, h2, hint } from '../ui/styles';
 
@@ -18,6 +18,9 @@ export function ExportPanel({
   buildOrder,
   settings,
   options,
+  skew,
+  floating,
+  skewSettings,
 }: {
   scope: ScopeAnalysis;
   models: ProjectModel[];
@@ -26,9 +29,12 @@ export function ExportPanel({
   buildOrder: BuildOrderView | undefined;
   settings: ClassifySettings;
   options: AnalyzeOptions & BuildOrderOptions;
+  skew: SkewReport | undefined;
+  floating: FloatingReport | undefined;
+  skewSettings: SkewSettings;
 }) {
   const [last, setLast] = useState<string | null>(null);
-  const report = (): ReportInput => ({ generatedAt: new Date(), scope, models, errors, classification, buildOrder, settings, options });
+  const report = (): ReportInput => ({ generatedAt: new Date(), scope, models, errors, classification, buildOrder, settings, options, skew, floating, skewSettings });
 
   const save = (ext: string, mime: string, content: (r: ReportInput) => string, suffix?: string) => {
     const r = report();
@@ -64,6 +70,9 @@ export function ExportPanel({
             onClick={() => save('csv', 'text/csv', (r) => (r.buildOrder ? buildOrderCsv(r.buildOrder, r.scope.graph, r.classification) : ''), 'BuildOrder')}
           >
             Build order (.csv)
+          </button>
+          <button type="button" className={btn} disabled={!skew} onClick={() => save('csv', 'text/csv', (r) => (r.skew ? skewCsv(r.skew) : ''), 'VersionSkew')}>
+            Version skew (.csv)
           </button>
         </div>
       </div>

@@ -4,25 +4,30 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnalysisWorkerClient, type Progress } from '@/client/workerClient';
 import { MERGED_SCOPE, modelsOf, scopeOf, type ClassifiedResult } from '@/lib/analyze';
 import { DEFAULT_SETTINGS } from '@/lib/classify';
+import { DEFAULT_SKEW_SETTINGS } from '@/lib/skew';
 import { normalizeSource } from '@/lib/metadata';
-import type { AnalysisResult, ClassifySettings, IdKey, NugetLookup, Origin } from '@/lib/types';
+import type { AnalysisResult, BindingResult, ClassifySettings, IdKey, NugetLookup, Origin, SkewSettings } from '@/lib/types';
 import type { AnalyzeInputMessage } from '@/workers/protocol';
+import { CollectScripts } from './collect/CollectScripts';
 import { useNugetLookups } from './hooks/useNugetLookups';
 import { usePersistentState } from './hooks/usePersistentState';
+import { BindingInputs, type BindingItem } from './input/BindingInputs';
 import { InputsPanel } from './input/InputsPanel';
 import { EMPTY_METADATA, MetadataInputs, type MetadataSources } from './input/MetadataInputs';
 import type { FileItem, PasteSlot } from './inputTypes';
+import { BindingCheck } from './results/BindingCheck';
 import { BuildOrder } from './results/BuildOrder';
 import { DependencyTable } from './results/DependencyTable';
-import { DependencyTree } from './results/DependencyTree';
+import { DependencyTree, type TreeFocus } from './results/DependencyTree';
 import { DuplicatesTabs } from './results/DuplicatesTabs';
 import { ExportPanel } from './results/ExportPanel';
+import { VersionSkew, type SkewFocus } from './results/VersionSkew';
 import { ClassificationPanel, ProxyBanner } from './settings/ClassificationPanel';
 import { Banner } from './ui/Banner';
 import { card, field } from './ui/styles';
 import { Tabs } from './ui/Tabs';
 
-type TabId = 'inputs' | 'classification' | 'dependencies' | 'duplicates' | 'tree' | 'buildOrder' | 'export';
+type TabId = 'inputs' | 'collect' | 'classification' | 'dependencies' | 'duplicates' | 'tree' | 'buildOrder' | 'skew' | 'binding' | 'export';
 
 interface Prefs {
   includeRidTargets: boolean;
@@ -55,6 +60,7 @@ export default function AssetsGraphApp() {
   const [prefs, setPrefs] = usePersistentState<Prefs>('prefs', DEFAULT_PREFS);
   const [overrides, setOverrides] = usePersistentState<Record<IdKey, Origin>>('overrides', {});
   const [removedFeeds, setRemovedFeeds] = usePersistentState<string[]>('removed-feeds', []);
+  const [skewSettings, setSkewSettings] = usePersistentState<SkewSettings>('skew-settings', DEFAULT_SKEW_SETTINGS);
 
   const [pastes, setPastes] = useState<PasteSlot[]>(() => [{ id: 'paste-0', text: '' }]);
   const [files, setFiles] = useState<FileItem[]>([]);
@@ -70,6 +76,13 @@ export default function AssetsGraphApp() {
 
   const [tab, setTab] = useState<TabId>('inputs');
   const [scopeId, setScopeId] = useState(MERGED_SCOPE);
+  const [treeFocus, setTreeFocus] = useState<TreeFocus | undefined>();
+  const [skewFocus, setSkewFocus] = useState<SkewFocus | undefined>();
+  const [dupFocus, setDupFocus] = useState<{ sub: 'drift'; nonce: number } | undefined>();
+
+  const [bindingItems, setBindingItems] = useState<BindingItem[]>([]);
+  const [binding, setBinding] = useState<BindingResult | null>(null);
+  const [bindingBusy, setBindingBusy] = useState(false);
 
   const onLookupResults = useCallback((batch: Record<IdKey, NugetLookup>) => setLookups((prev) => ({ ...prev, ...batch })), []);
   const nuget = useNugetLookups(onLookupResults);
@@ -110,20 +123,44 @@ export default function AssetsGraphApp() {
     const seq = ++classifySeq.current;
     const handle = setTimeout(() => {
       worker
-        .classify({ settings, lookups, metadata: sourceMap, overrides }, { includeProjects: prefs.includeProjects })
+        .classify({ settings, lookups, metadata: sourceMap, overrides }, { includeProjects: prefs.includeProjects }, skewSettings)
         .then((r) => {
           if (seq === classifySeq.current) setClassified(r);
         })
         .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)));
     }, 120);
     return () => clearTimeout(handle);
-  }, [analysis, settings, lookups, sourceMap, overrides, prefs.includeProjects]);
+  }, [analysis, settings, lookups, sourceMap, overrides, prefs.includeProjects, skewSettings]);
+
+  // The binding check runs whenever its inputs change; it does not depend on the assets analysis.
+  const bindingSeq = useRef(0);
+  useEffect(() => {
+    const worker = workerRef.current;
+    const seq = ++bindingSeq.current;
+    if (bindingItems.length === 0 || !worker) {
+      setBinding(null);
+      return;
+    }
+    setBindingBusy(true);
+    worker
+      .binding(bindingItems.map((b) => ({ inputId: b.id, fileName: b.name, file: b.file, text: b.text })))
+      .then((r) => {
+        if (seq === bindingSeq.current) setBinding(r);
+      })
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
+      .finally(() => {
+        if (seq === bindingSeq.current) setBindingBusy(false);
+      });
+  }, [bindingItems]);
+  const bindingReady = binding !== null && binding.missing.length === 0;
 
   const hasResults = analysis !== null && analysis.models.length > 0;
   const scope = analysis ? scopeOf(analysis, scopeId) : null;
   const scopeModels = analysis ? modelsOf(analysis, scopeId) : [];
   const classification = classified?.classification;
   const buildOrder = classified?.buildOrders[scopeId];
+  const skew = classified?.skew[scopeId];
+  const floating = classified?.floating[scopeId];
 
   const setOverride = (key: IdKey, origin: Origin | undefined) =>
     setOverrides((prev) => {
@@ -154,20 +191,23 @@ export default function AssetsGraphApp() {
         onChange={setTab}
         tabs={[
           { id: 'inputs', label: 'Inputs' },
+          { id: 'collect', label: 'Collect scripts' },
           { id: 'classification', label: 'Classification', disabled: !hasResults },
           { id: 'dependencies', label: 'Dependencies', count: scope?.rows.length, disabled: !hasResults },
           { id: 'duplicates', label: 'Duplicates', count: dupCount, disabled: !hasResults },
           { id: 'tree', label: 'Tree', disabled: !hasResults },
           { id: 'buildOrder', label: 'Build order', disabled: !hasResults },
+          { id: 'skew', label: 'Version skew', count: skew?.internal.length, disabled: !hasResults },
+          { id: 'binding', label: 'Binding check', count: bindingReady ? binding.counts.error : undefined, disabled: !bindingReady },
           { id: 'export', label: 'Export', disabled: !hasResults },
         ]}
       />
 
-      {hasResults && tab !== 'inputs' && classification?.proxyWarning && tab !== 'classification' ? (
+      {hasResults && tab !== 'inputs' && tab !== 'collect' && classification?.proxyWarning && tab !== 'classification' ? (
         <ProxyBanner warning={classification.proxyWarning} trust={settings.trustProxyFeedMetadata} onTrust={(v) => setSettings({ ...settings, trustProxyFeedMetadata: v })} />
       ) : null}
 
-      {hasResults && tab !== 'inputs' && tab !== 'classification' && analysis ? (
+      {hasResults && tab !== 'inputs' && tab !== 'collect' && tab !== 'classification' && tab !== 'binding' && analysis ? (
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <label htmlFor="scope" className="text-ink-2">
             Scope
@@ -218,8 +258,13 @@ export default function AssetsGraphApp() {
               }}
             />
           </div>
+          <div className={card}>
+            <BindingInputs items={bindingItems} onItems={setBindingItems} result={binding} busy={bindingBusy} />
+          </div>
         </div>
       ) : null}
+
+      {tab === 'collect' ? <CollectScripts /> : null}
 
       {tab === 'classification' && analysis ? (
         <ClassificationPanel
@@ -243,9 +288,13 @@ export default function AssetsGraphApp() {
 
       {tab === 'dependencies' && scope ? <DependencyTable rows={scope.rows} classification={classification} overrides={overrides} onOverride={setOverride} /> : null}
 
-      {tab === 'duplicates' && scope && analysis ? <DuplicatesTabs duplicates={scope.duplicates} isMerged={scopeId === MERGED_SCOPE} fileCount={analysis.models.length} /> : null}
+      {tab === 'duplicates' && scope && analysis ? (
+        <DuplicatesTabs key={dupFocus?.nonce ?? 0} duplicates={scope.duplicates} isMerged={scopeId === MERGED_SCOPE} fileCount={analysis.models.length} initialSub={dupFocus?.sub} />
+      ) : null}
 
-      {tab === 'tree' && scopeModels.length > 0 ? <DependencyTree key={scopeId} models={scopeModels} classification={classification} includeRid={analysis?.options.includeRidTargets ?? false} /> : null}
+      {tab === 'tree' && scopeModels.length > 0 ? (
+        <DependencyTree key={scopeId} models={scopeModels} classification={classification} includeRid={analysis?.options.includeRidTargets ?? false} focus={treeFocus} />
+      ) : null}
 
       {tab === 'buildOrder' && scope ? (
         <BuildOrder
@@ -259,6 +308,46 @@ export default function AssetsGraphApp() {
         />
       ) : null}
 
+      {tab === 'skew' && analysis ? (
+        <VersionSkew
+          skew={skew}
+          floating={floating}
+          settings={skewSettings}
+          onSettings={setSkewSettings}
+          isMerged={scopeId === MERGED_SCOPE}
+          fileCount={analysis.models.length}
+          onOpenDrift={() => {
+            setDupFocus({ sub: 'drift', nonce: Date.now() });
+            setTab('duplicates');
+          }}
+          canJump={hasResults}
+          onJumpTree={(id) => {
+            setTreeFocus({ key: id.toLowerCase(), nonce: Date.now() });
+            setTab('tree');
+          }}
+          focus={skewFocus}
+        />
+      ) : null}
+
+      {tab === 'binding' && bindingReady ? (
+        <BindingCheck
+          result={binding}
+          classification={classification}
+          settings={settings}
+          canJump={hasResults}
+          onJump={(packageId) => {
+            setScopeId(MERGED_SCOPE);
+            setTreeFocus({ key: packageId.toLowerCase(), nonce: Date.now() });
+            setTab('tree');
+          }}
+          onJumpSkew={(packageId) => {
+            setScopeId(MERGED_SCOPE);
+            setSkewFocus({ key: packageId.toLowerCase(), nonce: Date.now() });
+            setTab('skew');
+          }}
+        />
+      ) : null}
+
       {tab === 'export' && scope && analysis ? (
         <ExportPanel
           scope={scope}
@@ -268,10 +357,14 @@ export default function AssetsGraphApp() {
           buildOrder={buildOrder}
           settings={settings}
           options={{ ...analysis.options, includeProjects: prefs.includeProjects }}
+          skew={skew}
+          floating={floating}
+          skewSettings={skewSettings}
         />
       ) : null}
 
-      {tab !== 'inputs' && !hasResults ? <Banner tone="info" title="Analyze at least one file first." /> : null}
+      {tab !== 'inputs' && tab !== 'collect' && tab !== 'binding' && !hasResults ? <Banner tone="info" title="Analyze at least one file first." /> : null}
+      {tab === 'binding' && !bindingReady ? <Banner tone="info" title="Load a deps.json and an assembly manifest under Inputs → Runtime binding inputs." /> : null}
 
       <footer className="pt-4 text-xs text-muted">Assets Graph · static site, no server code, no analytics.</footer>
     </div>

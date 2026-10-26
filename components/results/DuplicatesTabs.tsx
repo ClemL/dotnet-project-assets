@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { Duplicates } from '@/lib/types';
-import { describeRange } from '@/lib/version';
+import { describeRange } from '@/lib/versions';
 import { Tabs } from '../ui/Tabs';
 import { cx, td, th } from '../ui/styles';
 
@@ -33,8 +33,8 @@ function Table({ head, children }: { head: string[]; children: React.ReactNode }
 
 const mono = cx(td, 'font-mono text-xs');
 
-export function DuplicatesTabs({ duplicates, isMerged, fileCount }: { duplicates: Duplicates; isMerged: boolean; fileCount: number }) {
-  const [sub, setSub] = useState<Sub>('tfm');
+export function DuplicatesTabs({ duplicates, isMerged, fileCount, initialSub = 'tfm' }: { duplicates: Duplicates; isMerged: boolean; fileCount: number; initialSub?: Sub }) {
+  const [sub, setSub] = useState<Sub>(initialSub);
   const [onlyConflicts, setOnlyConflicts] = useState(true);
   const conflicts = duplicates.ranges.filter((r) => r.hasConflict);
   const ranges = onlyConflicts ? conflicts : duplicates.ranges;

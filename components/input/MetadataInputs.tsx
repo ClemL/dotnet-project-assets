@@ -7,8 +7,9 @@ import { metadataKey, parseNupkgMetadata, parseSourceMap } from '@/lib/metadata'
 import type { ClassifyOutput, PackageRef, SourceMap } from '@/lib/types';
 import type { MetadataLoadResult } from '@/workers/protocol';
 import { Banner } from '../ui/Banner';
+import { CodeBlock } from '../ui/CodeBlock';
 import { ProgressBar } from '../ui/ProgressBar';
-import { btn, btnPrimary, btnSmall, field, h2, hint, linkBtn } from '../ui/styles';
+import { btn, btnPrimary, btnSmall, field, h2, hint } from '../ui/styles';
 import { FolderSummary, useDirectoryInput } from './AssetsFolderPicker';
 import { SOURCE_MAP_SCRIPT } from './sourceMapScript';
 
@@ -245,10 +246,7 @@ export function MetadataInputs({
                 <code className="font-mono">%UserProfile%\.nuget\packages</code>, <code className="font-mono">-OutputFolder .\results</code>, <code className="font-mono">-IdFilter *</code>. Also in the repo at{' '}
                 <code className="font-mono">scripts/Export-NuGetSourceMap.ps1</code>.
               </p>
-              <button type="button" className={linkBtn} onClick={() => void navigator.clipboard?.writeText(SOURCE_MAP_SCRIPT)}>
-                Copy script
-              </button>
-              <pre className="max-h-64 overflow-auto rounded border border-line bg-surface-2 p-2 font-mono text-[11px] leading-snug">{SOURCE_MAP_SCRIPT}</pre>
+              <CodeBlock code={SOURCE_MAP_SCRIPT} label="Export-NuGetSourceMap.ps1" fileName="Export-NuGetSourceMap.ps1" maxHeight="max-h-64" />
             </div>
           </details>
         </div>

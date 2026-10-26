@@ -22,7 +22,7 @@ import type {
   PrefixSuggestion,
   ProxyWarning,
 } from './types';
-import { versionKey } from './version';
+import { versionKey } from './versions';
 
 export const DEFAULT_SYSTEM_PREFIXES: readonly string[] = ['System.', 'Microsoft.', 'runtime.', 'NETStandard.', 'Microsoft.NETCore.'];
 

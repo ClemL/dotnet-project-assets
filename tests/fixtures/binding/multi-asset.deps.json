@@ -1,0 +1,25 @@
+{
+  "runtimeTarget": { "name": ".NETCoreApp,Version=v10.0" },
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "Host.App/1.0.0": { "dependencies": { "Vendor.Suite": "4.2.0" }, "runtime": { "Host.App.dll": {} } },
+      "Vendor.Suite/4.2.0": {
+        "runtime": {
+          "lib/net8.0/Vendor.Suite.Core.dll": { "assemblyVersion": "4.2.0.0", "fileVersion": "4.2.17.0" },
+          "lib/net8.0/Vendor.Suite.Reports.dll": { "fileVersion": "4.2.17.0" },
+          "lib/net8.0/Vendor.Suite.Native.Shim.dll": { "assemblyVersion": "4.0.0.0", "fileVersion": "4.2.17.0" }
+        },
+        "runtimeTargets": {
+          "runtimes/unix/lib/net8.0/Vendor.Suite.Native.Shim.dll": { "rid": "unix", "assetType": "runtime", "assemblyVersion": "4.0.0.0", "fileVersion": "4.2.17.1" },
+          "runtimes/win/lib/net8.0/Vendor.Suite.Native.Shim.dll": { "rid": "win", "assetType": "runtime", "assemblyVersion": "4.0.0.0", "fileVersion": "4.2.17.2" },
+          "runtimes/win-x64/native/vendor_native.dll": { "rid": "win-x64", "assetType": "native", "fileVersion": "4.2.17.0" }
+        },
+        "resources": { "lib/net8.0/de/Vendor.Suite.Core.resources.dll": { "locale": "de" } }
+      }
+    }
+  },
+  "libraries": {
+    "Host.App/1.0.0": { "type": "project", "serviceable": false, "sha512": "" },
+    "Vendor.Suite/4.2.0": { "type": "package", "serviceable": true, "sha512": "sha512-x", "path": "vendor.suite/4.2.0" }
+  }
+}
