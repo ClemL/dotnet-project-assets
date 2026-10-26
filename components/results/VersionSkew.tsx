@@ -7,9 +7,10 @@ import { severityRank } from '@/lib/skew';
 import type { ConsumerRow, FloatingRef, FloatingReport, IdKey, RangeKind, RebuildSeverity, RebuildStep, Severity, SkewEdge, SkewReport, SkewRow, SkewSettings, TriState } from '@/lib/types';
 import { compareVersionStrings } from '@/lib/versions';
 import { Banner } from '../ui/Banner';
+import { CodeBlock } from '../ui/CodeBlock';
 import { DataTable, type Column } from '../ui/DataTable';
 import { OriginDot } from '../ui/OriginBadge';
-import { btn, btnSmall, card, cx, field, h2, hint, linkBtn, td, th } from '../ui/styles';
+import { btn, card, cx, field, h2, hint, linkBtn, td, th } from '../ui/styles';
 import { Tabs } from '../ui/Tabs';
 import { SkewSettingsDrawer } from './SkewSettingsDrawer';
 
@@ -35,33 +36,6 @@ function TriBadge({ value }: { value: TriState }) {
 }
 
 const passesSeverity = (s: Severity, f: SeverityFilter) => f === 'any' || severityRank(s) >= severityRank(f);
-
-function CopyBlock({ label, text }: { label: string; text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-medium">{label}</p>
-        <button
-          type="button"
-          className={btnSmall}
-          onClick={() => {
-            navigator.clipboard
-              ?.writeText(text)
-              .then(() => {
-                setCopied(true);
-                setTimeout(() => setCopied(false), 1500);
-              })
-              .catch(() => setCopied(false));
-          }}
-        >
-          {copied ? 'Copied' : 'Copy'}
-        </button>
-      </div>
-      <pre className="max-h-72 overflow-auto rounded bg-surface-2 p-2 font-mono text-xs">{text}</pre>
-    </div>
-  );
-}
 
 function EdgeDetail({ row }: { row: SkewRow }) {
   return (
@@ -592,13 +566,13 @@ export function VersionSkew({
                   <p>
                     Enable <code className="font-mono">packages.lock.json</code> with <code className="font-mono">RestoreLockedMode=true</code> in CI. Floats are then re-evaluated only when you refresh the lock file.
                   </p>
-                  <CopyBlock label="Directory.Build.props and commands" text={floating.snippets.lockFile} />
+                  <CodeBlock label="Directory.Build.props and commands" code={floating.snippets.lockFile} />
                 </li>
                 <li className="space-y-1">
                   <p>
                     Pin internal versions with Central Package Management (<code className="font-mono">Directory.Packages.props</code>). The versions below are what resolves today.
                   </p>
-                  <CopyBlock label="Directory.Packages.props" text={floating.snippets.cpm} />
+                  <CodeBlock label="Directory.Packages.props" code={floating.snippets.cpm} fileName="Directory.Packages.props" />
                 </li>
               </ol>
             </div>

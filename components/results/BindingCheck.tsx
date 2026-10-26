@@ -6,6 +6,7 @@ import type { AssemblyCopies, BindingIssue, BindingResult, BindingSeverity, Clas
 import { compareVersionStrings } from '@/lib/versions';
 import { SCRIPT_URL } from '../input/BindingInputs';
 import { Banner } from '../ui/Banner';
+import { CodeBlock } from '../ui/CodeBlock';
 import { DataTable, type Column } from '../ui/DataTable';
 import { card, cx, field, h2, hint, linkBtn, td, th } from '../ui/styles';
 
@@ -553,10 +554,12 @@ export function BindingCheck({
             (PowerShell 7+). It reads metadata with PEReader and never loads the assemblies.
           </li>
           <li>
-            Run it, for example:
-            <pre className="mt-1 overflow-x-auto rounded bg-surface-2 p-2 font-mono text-xs">
-              {".\\Export-AssemblyManifest.ps1 -BinPath 'C:\\dev\\git\\<Repo>\\<Project>\\bin\\Debug\\net10.0' -ExtraPaths @('C:\\dev\\git\\<Repo>\\plugins') -IncludeFramework $true -DotnetRoot 'C:\\Program Files\\dotnet' -ResultsFolder '.\\results'"}
-            </pre>
+            Run it, for example (the Collect scripts tab has scripts that find build and deployed folders for you):
+            <CodeBlock
+              className="mt-1"
+              label="Example"
+              code={".\\Export-AssemblyManifest.ps1 -BinPath 'C:\\dev\\git\\<Repo>\\<Project>\\bin\\Debug\\net10.0' -ExtraPaths @('C:\\dev\\git\\<Repo>\\plugins') -IncludeFramework $true -DotnetRoot 'C:\\Program Files\\dotnet' -ResultsFolder '.\\results'"}
+            />
           </li>
           <li>Load the deps.json, the generated results\AssemblyManifest_&lt;App&gt;_yyyyMMdd_HHmm.json, and optionally runtimeconfig.json on the Inputs tab.</li>
         </ol>

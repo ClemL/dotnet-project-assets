@@ -138,10 +138,14 @@ $assemblies = [System.Collections.Generic.List[object]]::new()
 $roots = [System.Collections.Generic.List[string]]::new()
 
 $scanRoots = @((Resolve-Path -LiteralPath $BinPath).Path) + @($ExtraPaths | ForEach-Object { (Resolve-Path -LiteralPath $_).Path })
+$separator = [IO.Path]::DirectorySeparatorChar
 for ($rootIndex = 0; $rootIndex -lt $scanRoots.Count; $rootIndex++) {
     $root = $scanRoots[$rootIndex]
     $roots.Add($root)
+    # Extra paths inside this root (e.g. bin\plugins) are scanned as their own roots, not twice.
+    $nested = @($scanRoots | Where-Object { $_ -ne $root -and $_.StartsWith($root.TrimEnd('\', '/') + $separator, [StringComparison]::OrdinalIgnoreCase) })
     foreach ($file in Get-ChildItem -LiteralPath $root -Recurse -File -Filter '*.dll' | Sort-Object FullName) {
+        if ($nested | Where-Object { $file.FullName.StartsWith($_.TrimEnd('\', '/') + $separator, [StringComparison]::OrdinalIgnoreCase) }) { continue }
         $relative = [IO.Path]::GetRelativePath($root, $file.FullName)
         $segments = $relative -split '[\\/]'
         $dirs = @($segments | Select-Object -SkipLast 1)

@@ -27,6 +27,7 @@ Node 20.9 or later.
 | Tab | What it does |
 | --- | --- |
 | Inputs | Paste (one body per box, **+ Add another**), upload `.json` files, or scan a folder. Folder scans keep only `**/obj/project.assets.json` and skip `node_modules`, `bin`, `.vs`, `.git`; the match count is shown before anything is analyzed. Optional `.nupkg.metadata` sources go here too. |
+| Collect scripts | Copyable PowerShell scripts (Copy and Download on every snippet) that gather the inputs from the usual places — `obj\project.assets.json` under your source folders, `deps.json`/`runtimeconfig.json` plus an assembly manifest from build outputs and from deployed apps (IIS, Windows services, install folders), and the NuGet source map — into `C:\dev\results\AssetsGraphInputs_yyyyMMdd_HHmm\`. Read-only on the searched folders, `-WhatIf` supported, CSV copy log. |
 | Classification | Offline toggle, nuget.org lookups, system/internal prefixes, internal feeds, manual overrides. |
 | Dependencies | Sortable, filterable list: Id, resolved version(s), type, direct/transitive, origin, reason, projects. Override any origin per Id. |
 | Duplicates | Across target frameworks, across projects (drift), range conflicts, redundant direct references, case-only Id collisions. |
@@ -114,7 +115,8 @@ client/     browser side effects with injectable dependencies: nuget.org lookups
 components/ React UI
 tests/      Vitest suites and hand-written fixtures
 scripts/    Export-NuGetSourceMap.ps1
-public/scripts/  Export-AssemblyManifest.ps1 (downloadable from the Binding check tab)
+public/scripts/  Export-AssemblyManifest.ps1, Collect-ProjectAssets.ps1, Collect-BuildOutputs.ps1, Collect-DeployedApps.ps1
+                 (shown on the Collect scripts tab; the Collect-* scripts run in Windows PowerShell 5.1 and 7)
 ```
 
 ## Binding check rules

@@ -8,6 +8,7 @@ import { DEFAULT_SKEW_SETTINGS } from '@/lib/skew';
 import { normalizeSource } from '@/lib/metadata';
 import type { AnalysisResult, BindingResult, ClassifySettings, IdKey, NugetLookup, Origin, SkewSettings } from '@/lib/types';
 import type { AnalyzeInputMessage } from '@/workers/protocol';
+import { CollectScripts } from './collect/CollectScripts';
 import { useNugetLookups } from './hooks/useNugetLookups';
 import { usePersistentState } from './hooks/usePersistentState';
 import { BindingInputs, type BindingItem } from './input/BindingInputs';
@@ -26,7 +27,7 @@ import { Banner } from './ui/Banner';
 import { card, field } from './ui/styles';
 import { Tabs } from './ui/Tabs';
 
-type TabId = 'inputs' | 'classification' | 'dependencies' | 'duplicates' | 'tree' | 'buildOrder' | 'skew' | 'binding' | 'export';
+type TabId = 'inputs' | 'collect' | 'classification' | 'dependencies' | 'duplicates' | 'tree' | 'buildOrder' | 'skew' | 'binding' | 'export';
 
 interface Prefs {
   includeRidTargets: boolean;
@@ -190,6 +191,7 @@ export default function AssetsGraphApp() {
         onChange={setTab}
         tabs={[
           { id: 'inputs', label: 'Inputs' },
+          { id: 'collect', label: 'Collect scripts' },
           { id: 'classification', label: 'Classification', disabled: !hasResults },
           { id: 'dependencies', label: 'Dependencies', count: scope?.rows.length, disabled: !hasResults },
           { id: 'duplicates', label: 'Duplicates', count: dupCount, disabled: !hasResults },
@@ -201,11 +203,11 @@ export default function AssetsGraphApp() {
         ]}
       />
 
-      {hasResults && tab !== 'inputs' && classification?.proxyWarning && tab !== 'classification' ? (
+      {hasResults && tab !== 'inputs' && tab !== 'collect' && classification?.proxyWarning && tab !== 'classification' ? (
         <ProxyBanner warning={classification.proxyWarning} trust={settings.trustProxyFeedMetadata} onTrust={(v) => setSettings({ ...settings, trustProxyFeedMetadata: v })} />
       ) : null}
 
-      {hasResults && tab !== 'inputs' && tab !== 'classification' && tab !== 'binding' && analysis ? (
+      {hasResults && tab !== 'inputs' && tab !== 'collect' && tab !== 'classification' && tab !== 'binding' && analysis ? (
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <label htmlFor="scope" className="text-ink-2">
             Scope
@@ -261,6 +263,8 @@ export default function AssetsGraphApp() {
           </div>
         </div>
       ) : null}
+
+      {tab === 'collect' ? <CollectScripts /> : null}
 
       {tab === 'classification' && analysis ? (
         <ClassificationPanel
@@ -359,7 +363,7 @@ export default function AssetsGraphApp() {
         />
       ) : null}
 
-      {tab !== 'inputs' && tab !== 'binding' && !hasResults ? <Banner tone="info" title="Analyze at least one file first." /> : null}
+      {tab !== 'inputs' && tab !== 'collect' && tab !== 'binding' && !hasResults ? <Banner tone="info" title="Analyze at least one file first." /> : null}
       {tab === 'binding' && !bindingReady ? <Banner tone="info" title="Load a deps.json and an assembly manifest under Inputs → Runtime binding inputs." /> : null}
 
       <footer className="pt-4 text-xs text-muted">Assets Graph · static site, no server code, no analytics.</footer>
