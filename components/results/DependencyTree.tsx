@@ -83,7 +83,24 @@ function flatten(nodes: DepTreeNode[], out: DepTreeNode[] = []): DepTreeNode[] {
   return out;
 }
 
-export function DependencyTree({ models, classification, includeRid }: { models: ProjectModel[]; classification: ClassifyOutput | undefined; includeRid: boolean }) {
+export interface TreeFocus {
+  key: IdKey;
+  /** Changes on every request so jumping to the same Id twice still runs. */
+  nonce: number;
+}
+
+export function DependencyTree({
+  models,
+  classification,
+  includeRid,
+  focus,
+}: {
+  models: ProjectModel[];
+  classification: ClassifyOutput | undefined;
+  includeRid: boolean;
+  /** Jump request from another tab: select a project and target containing the Id, then find its paths. */
+  focus?: TreeFocus;
+}) {
   const [modelId, setModelId] = useState<string | undefined>(models[0]?.inputId);
   const model = models.find((m) => m.inputId === modelId) ?? models[0];
   const targets = useMemo(() => (model ? selectTargets(model, { includeRidTargets: includeRid }) : []), [model, includeRid]);
@@ -108,6 +125,23 @@ export function DependencyTree({ models, classification, includeRid }: { models:
     setWhyKey(null);
     setMessage(null);
   }, [target]);
+
+  const [pendingSearch, setPendingSearch] = useState<IdKey | null>(null);
+  useEffect(() => {
+    if (!focus) return;
+    for (const m of models) {
+      const t = selectTargets(m, { includeRidTargets: includeRid }).find((x) => x.nodes[focus.key]);
+      if (t) {
+        setModelId(m.inputId);
+        setTargetKey(t.key);
+        setPendingSearch(focus.key);
+        return;
+      }
+    }
+    setMessage(`"${focus.key}" is not in any loaded project.assets.json.`);
+    // Runs once per jump request; models and includeRid are read at that moment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus?.nonce]);
 
   const why = useMemo(() => {
     if (!target || !whyKey) return null;
@@ -171,6 +205,17 @@ export function DependencyTree({ models, classification, includeRid }: { models:
     const onPath = pathNodesTo(target, key);
     setExpanded(new Set(all.filter((n) => n.kind === 'expanded' && n.key !== key && onPath.has(n.key)).map((n) => n.uid)));
   };
+
+  // Declared after runSearch so the jump search uses the tree of the newly selected target.
+  useEffect(() => {
+    if (!pendingSearch || !target?.nodes[pendingSearch]) return;
+    const id = target.nodes[pendingSearch].id;
+    setPendingSearch(null);
+    setQuery(id);
+    runSearch(id);
+    // runSearch is recreated every render; the jump only depends on the pending Id and the target.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSearch, target]);
 
   if (!model || !target) return <p className="text-sm text-muted">No targets to show.</p>;
   const nodeCount = Object.keys(target.nodes).length;

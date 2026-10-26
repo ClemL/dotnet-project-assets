@@ -1,8 +1,8 @@
 // Promise wrapper around the analysis worker.
 
 import type { BuildOrderOptions, ClassifiedResult } from '../lib/analyze';
-import type { AnalysisResult, AnalyzeOptions, ClassifyInput } from '../lib/types';
-import type { AnalyzeInputMessage, MetadataFileMessage, MetadataLoadResult, WorkerRequest, WorkerResponse } from '../workers/protocol';
+import type { AnalysisResult, AnalyzeOptions, BindingResult, ClassifyInput } from '../lib/types';
+import type { AnalyzeInputMessage, BindingInputMessage, MetadataFileMessage, MetadataLoadResult, WorkerRequest, WorkerResponse } from '../workers/protocol';
 
 export interface Progress {
   stage: string;
@@ -70,6 +70,10 @@ export class AnalysisWorkerClient {
 
   loadPackagesFolder(files: MetadataFileMessage[], onProgress?: (p: Progress) => void): Promise<MetadataLoadResult> {
     return this.send({ type: 'loadPackagesFolder', files }, onProgress);
+  }
+
+  binding(inputs: BindingInputMessage[]): Promise<BindingResult> {
+    return this.send({ type: 'binding', inputs });
   }
 
   dispose(): void {

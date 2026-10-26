@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { btn, cx, h2, hint } from '../ui/styles';
 
-export function FileDropzone({ onFiles }: { onFiles: (files: File[]) => void }) {
+export function FileDropzone({ onFiles, title = 'Upload files', id = 'upload' }: { onFiles: (files: File[]) => void; title?: string; id?: string }) {
   const [over, setOver] = useState(false);
   const [ignored, setIgnored] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -13,10 +13,10 @@ export function FileDropzone({ onFiles }: { onFiles: (files: File[]) => void }) 
     if (json.length > 0) onFiles(json);
   };
   return (
-    <section className="space-y-3" aria-labelledby="upload-heading">
+    <section className="space-y-3" aria-labelledby={`${id}-heading`}>
       <div>
-        <h2 id="upload-heading" className={h2}>
-          Upload files
+        <h2 id={`${id}-heading`} className={h2}>
+          {title}
         </h2>
         <p className={hint}>Files are read in your browser; nothing is uploaded.</p>
       </div>

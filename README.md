@@ -32,6 +32,7 @@ Node 20.9 or later.
 | Duplicates | Across target frameworks, across projects (drift), range conflicts, redundant direct references, case-only Id collisions. |
 | Tree | Per project and target. `Id (requested range → resolved)`, `(*)` jumps to the first expansion, cycles are flagged, and the search box highlights every path to an Id. |
 | Build order | Internal nodes only, public chains collapsed, Kahn waves, cycle paths when no order exists, and a DAG colored by wave. |
+| Binding check | Enabled once `<App>.deps.json` and an assembly manifest are loaded (Inputs → Runtime binding inputs). Paste a FileNotFoundException / FileLoadException to find every requester of that exact assembly version, what is deployed instead, and the NuGet packages on both sides. Also lists every reference by classification, assemblies with multiple copies, and package version ↔ AssemblyVersion correlation. |
 | Export | Markdown, JSON, and CSV (`-Dependencies`, `-BuildOrder`) named `AssetsGraph_<ProjectNameOrMerged>_yyyyMMdd_HHmm.<ext>`. |
 
 The **Scope** selector switches every results tab between the merged graph and a single file.
@@ -105,13 +106,35 @@ Plan availability changes; check <https://vercel.com/docs/deployment-protection>
 ## Code layout
 
 ```
-lib/        pure analysis code, no React or DOM: parse, graph, duplicates, classify, metadata, export, version, framework, paths
+lib/        pure analysis code, no React or DOM: parse, graph, duplicates, classify, metadata, export, version, framework, paths,
+            binding + bindingInputs (Binding check)
 workers/    analyze.worker.ts (wraps lib) and the message protocol
 client/     browser side effects with injectable dependencies: nuget.org lookups, localStorage, file and folder picking, downloads
 components/ React UI
 tests/      Vitest suites and hand-written fixtures
 scripts/    Export-NuGetSourceMap.ps1
+public/scripts/  Export-AssemblyManifest.ps1 (downloadable from the Binding check tab)
 ```
+
+## Binding check rules
+
+The assembly manifest comes from `public/scripts/Export-AssemblyManifest.ps1` (PowerShell 7+), which reads
+metadata with `PEReader`/`MetadataReader` and never loads an assembly. Package versions and AssemblyVersions
+are never compared with each other; deps.json is the only mapping between them.
+
+Verified on .NET 10.0.13 (default load context) by swapping DLLs under a test app:
+
+1. A deployed version lower than the reference fails with FileNotFoundException "The system cannot find the
+   file specified", the same exception as a missing file. The exception type does not separate the two.
+2. A DLL in `bin\` that `<App>.deps.json` does not list is not loadable (same FileNotFoundException).
+3. The public key token is not checked: a different key, signed → unsigned, and unsigned → signed all bind.
+   TOKEN_MISMATCH is therefore a warning, not an error (.NET Framework would fail).
+4. When the app and the shared framework both ship an assembly, the higher version wins, compared using the
+   `assemblyVersion` recorded in deps.json. Without that field, the framework copy wins.
+5. deps.json records `assemblyVersion` for package and project-reference assets; only the application's own
+   entry has none. RID-specific assets (`runtimes/win/lib/...`) are under `runtimeTargets`.
+
+Plugin folders (manifest roots after the first) resolve from their own folder first, then the app folder.
 
 ## Assumptions about project.assets.json to verify against real files
 

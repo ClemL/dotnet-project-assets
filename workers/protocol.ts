@@ -1,13 +1,21 @@
 // Messages between the UI thread and workers/analyze.worker.ts.
 
 import type { BuildOrderOptions, ClassifiedResult } from '../lib/analyze';
-import type { AnalysisResult, AnalyzeOptions, ClassifyInput, InputKind, SourceMap } from '../lib/types';
+import type { AnalysisResult, AnalyzeOptions, BindingResult, ClassifyInput, InputKind, SourceMap } from '../lib/types';
 
 export interface AnalyzeInputMessage {
   inputId: string;
   fileName: string;
   kind: InputKind;
   /** Either a File (read inside the worker) or pasted text. */
+  file?: File;
+  text?: string;
+}
+
+/** A binding-check input (deps.json, assembly manifest, runtimeconfig.json): a File or pasted text. */
+export interface BindingInputMessage {
+  inputId: string;
+  fileName: string;
   file?: File;
   text?: string;
 }
@@ -20,7 +28,8 @@ export interface MetadataFileMessage {
 export type WorkerRequest =
   | { type: 'analyze'; requestId: number; inputs: AnalyzeInputMessage[]; options: AnalyzeOptions; systemPrefixes: string[] }
   | { type: 'classify'; requestId: number; input: Omit<ClassifyInput, 'packages'>; buildOrder: BuildOrderOptions }
-  | { type: 'loadPackagesFolder'; requestId: number; files: MetadataFileMessage[] };
+  | { type: 'loadPackagesFolder'; requestId: number; files: MetadataFileMessage[] }
+  | { type: 'binding'; requestId: number; inputs: BindingInputMessage[] };
 
 export interface MetadataLoadResult {
   map: SourceMap;
@@ -33,4 +42,5 @@ export type WorkerResponse =
   | { type: 'analyzed'; requestId: number; result: AnalysisResult }
   | { type: 'classified'; requestId: number; result: ClassifiedResult }
   | { type: 'packagesFolderLoaded'; requestId: number; result: MetadataLoadResult }
+  | { type: 'bindingAnalyzed'; requestId: number; result: BindingResult }
   | { type: 'error'; requestId: number; message: string };
