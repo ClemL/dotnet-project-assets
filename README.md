@@ -32,8 +32,9 @@ Node 20.9 or later.
 | Duplicates | Across target frameworks, across projects (drift), range conflicts, redundant direct references, case-only Id collisions. |
 | Tree | Per project and target. `Id (requested range → resolved)`, `(*)` jumps to the first expansion, cycles are flagged, and the search box highlights every path to an Id. |
 | Build order | Internal nodes only, public chains collapsed, Kahn waves, cycle paths when no order exists, and a DAG colored by wave. |
+| Version skew | Stale internal builds: per-package skew (requested vs resolved build, spread, oldest requester, severity), consumer ranking with the outlier, a wave-ordered rebuild plan (with cascade), and floating/unpinned direct references with lock-file and Central Package Management status. Settings (build-number regex, thresholds, rebuild minimum, cascade, public packages) are saved in the browser. |
 | Binding check | Enabled once `<App>.deps.json` and an assembly manifest are loaded (Inputs → Runtime binding inputs). Paste a FileNotFoundException / FileLoadException to find every requester of that exact assembly version, what is deployed instead, and the NuGet packages on both sides. Also lists every reference by classification, assemblies with multiple copies, and package version ↔ AssemblyVersion correlation. |
-| Export | Markdown, JSON, and CSV (`-Dependencies`, `-BuildOrder`) named `AssetsGraph_<ProjectNameOrMerged>_yyyyMMdd_HHmm.<ext>`. |
+| Export | Markdown, JSON, and CSV (`-Dependencies`, `-BuildOrder`, `-VersionSkew`) named `AssetsGraph_<ProjectNameOrMerged>_yyyyMMdd_HHmm.<ext>`. |
 
 The **Scope** selector switches every results tab between the merged graph and a single file.
 
@@ -106,8 +107,8 @@ Plan availability changes; check <https://vercel.com/docs/deployment-protection>
 ## Code layout
 
 ```
-lib/        pure analysis code, no React or DOM: parse, graph, duplicates, classify, metadata, export, version, framework, paths,
-            binding + bindingInputs (Binding check)
+lib/        pure analysis code, no React or DOM: parse, graph, duplicates, classify, metadata, export, versions, framework, paths,
+            skew + floating (Version skew), binding + bindingInputs (Binding check)
 workers/    analyze.worker.ts (wraps lib) and the message protocol
 client/     browser side effects with injectable dependencies: nuget.org lookups, localStorage, file and folder picking, downloads
 components/ React UI
@@ -135,6 +136,31 @@ Verified on .NET 10.0.13 (default load context) by swapping DLLs under a test ap
    entry has none. RID-specific assets (`runtimes/win/lib/...`) are under `runtimeTargets`.
 
 Plugin folders (manifest roots after the first) resolve from their own folder first, then the app folder.
+
+## Version skew rules
+
+- Requested version = the range's lower bound; a bare `10.0.0-13243` is its own lower bound. A floating range
+  that the resolved version satisfies requests the resolved version (it picked the newest match), so a direct
+  `[10.0.*-*, )` reference is never stale.
+- Lag = resolved build − requested build, only when both share major.minor.patch and the build-number regex
+  (default `-(?:[A-Za-z]+\.)?(\d+)$`) matches both. Otherwise the SemVer difference is shown (major → high,
+  minor → medium, patch/prerelease → low).
+- Internal = Project, Private, or Private (inferred). Unclassified packages count as public.
+- Edges to `type: project` children are skipped: a project's version is not a package version.
+
+Verified against `project.assets.json` written by .NET SDK 10.0.113 (NuGet 7.x) and the NuGet.ProjectModel
+writer from 5.11 through 7.9:
+
+1. `project.restore.restoreLockProperties.restorePackagesWithLockFile` is a string (`"true"`), and the whole
+   object is written only when a lock property is set.
+2. `centralPackageVersionsManagementEnabled`, `CentralPackageTransitivePinningEnabled` (capital C),
+   `restoreLockedMode`, and per-dependency `versionCentrallyManaged` / `autoReferenced` are written only when
+   true. Absent therefore means unknown, not disabled.
+3. An exact pin `[2.1.35]` is written as `[2.1.35, 2.1.35]`; floats as `[13.0.*, )` and `[4.*-*, )`;
+   `projectFileDependencyGroups` writes `Newtonsoft.Json >= 13.0.*`.
+4. `VersionOverride` writes the override into `version` plus `versionOverride`, without `versionCentrallyManaged`.
+5. SDK 10 adds `project.frameworks[tfm].packagesToPrune` (272 entries for net10.0). Pruned Ids can appear in a
+   parent's dependency list with no entry in `targets`; those edges are skipped.
 
 ## Assumptions about project.assets.json to verify against real files
 

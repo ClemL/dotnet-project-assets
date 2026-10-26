@@ -1,0 +1,78 @@
+{
+  "version": 3,
+  "targets": {
+    "net10.0": {
+      "Model.PBM/10.0.0-13300": {
+        "type": "package",
+        "dependencies": { "Model.Ref": "10.0.0-12986", "Model.Import": "10.0.0-13388", "Microsoft.Data.SqlClient": "6.1.1" }
+      },
+      "Model.CQE/10.0.0-13404": {
+        "type": "package",
+        "dependencies": { "Model.Import": "10.0.0-13388", "Model.Pbm": "10.0.0-13300" }
+      },
+      "Model.Landing/10.0.0-13500": {
+        "type": "package",
+        "dependencies": { "Model.Import": "10.0.0-13463", "Model.CQE": "10.0.0-13094" }
+      },
+      "Model.Ref/10.0.0-13570": { "type": "package" },
+      "Model.Import/10.0.0-13615": { "type": "package", "dependencies": { "Model.Ref": "10.0.0-13560" } },
+      "Plugin.Logging.Console/10.0.0-13600": { "type": "package" },
+      "Microsoft.EntityFrameworkCore.SqlServer/10.0.0": { "type": "package", "dependencies": { "Microsoft.Data.SqlClient": "6.1.4" } },
+      "Microsoft.Data.SqlClient/7.1.1": { "type": "package" },
+      "Serilog/4.2.0": { "type": "package" },
+      "Dapper/2.1.35": { "type": "package" },
+      "Polly/8.5.0": { "type": "package" }
+    }
+  },
+  "libraries": {
+    "Model.PBM/10.0.0-13300": { "sha512": "x", "type": "package", "path": "model.pbm/10.0.0-13300" },
+    "Model.CQE/10.0.0-13404": { "sha512": "x", "type": "package", "path": "model.cqe/10.0.0-13404" },
+    "Model.Landing/10.0.0-13500": { "sha512": "x", "type": "package", "path": "model.landing/10.0.0-13500" },
+    "Model.Ref/10.0.0-13570": { "sha512": "x", "type": "package", "path": "model.ref/10.0.0-13570" },
+    "Model.Import/10.0.0-13615": { "sha512": "x", "type": "package", "path": "model.import/10.0.0-13615" },
+    "Plugin.Logging.Console/10.0.0-13600": { "sha512": "x", "type": "package", "path": "plugin.logging.console/10.0.0-13600" },
+    "Microsoft.EntityFrameworkCore.SqlServer/10.0.0": { "sha512": "x", "type": "package", "path": "microsoft.entityframeworkcore.sqlserver/10.0.0" },
+    "Microsoft.Data.SqlClient/7.1.1": { "sha512": "x", "type": "package", "path": "microsoft.data.sqlclient/7.1.1" },
+    "Serilog/4.2.0": { "sha512": "x", "type": "package", "path": "serilog/4.2.0" },
+    "Dapper/2.1.35": { "sha512": "x", "type": "package", "path": "dapper/2.1.35" },
+    "Polly/8.5.0": { "sha512": "x", "type": "package", "path": "polly/8.5.0" }
+  },
+  "projectFileDependencyGroups": {
+    "net10.0": [
+      "Model.Import >= 10.0.*-*",
+      "Model.PBM >= 10.0.0-13300",
+      "Model.Landing >= 10.0.0-13500",
+      "Plugin.Logging.Console >= 10.0.*-*",
+      "Microsoft.EntityFrameworkCore.SqlServer >= 10.0.0",
+      "Serilog >= 4.*",
+      "Dapper >= 2.1.35 <= 2.1.35",
+      "Polly >= 8.0.0 < 9.0.0"
+    ]
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\dev\\git\\Rx\\Rx.Api\\Rx.Api.csproj",
+      "projectName": "Rx.Api",
+      "projectPath": "C:\\dev\\git\\Rx\\Rx.Api\\Rx.Api.csproj",
+      "projectStyle": "PackageReference",
+      "sources": { "https://api.nuget.org/v3/index.json": {}, "https://pkgs.dev.azure.com/inscriptrx/_packaging/rx/nuget/v3/index.json": {} },
+      "frameworks": { "net10.0": { "targetAlias": "net10.0", "projectReferences": {} } }
+    },
+    "frameworks": {
+      "net10.0": {
+        "targetAlias": "net10.0",
+        "dependencies": {
+          "Model.Import": { "target": "Package", "version": "[10.0.*-*, )" },
+          "Model.PBM": { "target": "Package", "version": "[10.0.0-13300, )" },
+          "Model.Landing": { "target": "Package", "version": "[10.0.0-13500, )" },
+          "Plugin.Logging.Console": { "target": "Package", "version": "[10.0.*-*, )" },
+          "Microsoft.EntityFrameworkCore.SqlServer": { "target": "Package", "version": "[10.0.0, )" },
+          "Serilog": { "target": "Package", "version": "[4.*, )" },
+          "Dapper": { "target": "Package", "version": "[2.1.35, 2.1.35]" },
+          "Polly": { "target": "Package", "version": "[8.0.0, 9.0.0)" }
+        }
+      }
+    }
+  }
+}

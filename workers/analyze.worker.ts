@@ -48,7 +48,7 @@ async function handle(req: WorkerRequest): Promise<void> {
     }
     case 'classify': {
       if (!current) throw new Error('Nothing analyzed yet.');
-      post({ type: 'classified', requestId: req.requestId, result: classifyAndOrder(current, req.input, req.buildOrder) });
+      post({ type: 'classified', requestId: req.requestId, result: classifyAndOrder(current, req.input, req.buildOrder, req.skew) });
       return;
     }
     case 'loadPackagesFolder': {

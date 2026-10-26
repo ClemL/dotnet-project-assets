@@ -2,8 +2,8 @@
 
 import { normalizeFramework, splitTargetKey } from './framework';
 import { dirname, joinPath, pathKey } from './paths';
-import type { DirectDep, IdKey, ParseResult, ProjectModel, TargetGraph, TargetNode } from './types';
-import { normalizeVersion, parseDependencyGroupEntry } from './version';
+import type { DeclaredDep, DirectDep, IdKey, ParseResult, ProjectModel, RestoreFlags, TargetGraph, TargetNode, TriState } from './types';
+import { normalizeVersion, parseDependencyGroupEntry } from './versions';
 
 type Json = Record<string, unknown>;
 
@@ -16,6 +16,49 @@ export function splitLibraryKey(key: string): { id: string; version: string } | 
   const i = key.indexOf('/');
   if (i <= 0 || i === key.length - 1) return null;
   return { id: key.slice(0, i), version: key.slice(i + 1) };
+}
+
+/** Case-insensitive property lookup: some restore keys changed casing across NuGet versions. */
+function prop(obj: Json | undefined, name: string): unknown {
+  if (!obj) return undefined;
+  if (name in obj) return obj[name];
+  const lower = name.toLowerCase();
+  for (const [k, v] of Object.entries(obj)) if (k.toLowerCase() === lower) return v;
+  return undefined;
+}
+
+/** true / "true" → enabled, false / "false" → disabled, absent or anything else → unknown. */
+function triState(v: unknown): TriState {
+  if (v === true || (typeof v === 'string' && v.trim().toLowerCase() === 'true')) return 'enabled';
+  if (v === false || (typeof v === 'string' && v.trim().toLowerCase() === 'false')) return 'disabled';
+  return 'unknown';
+}
+
+/**
+ * Reads lock-file and Central Package Management settings from project.restore. NuGet writes these
+ * flags only when they are true (restorePackagesWithLockFile is the raw MSBuild string), so an
+ * absent flag stays "unknown". A packages.lock.json next to the project is used even when the
+ * property is absent.
+ */
+export function readRestoreFlags(restore: Json | undefined, declared: DeclaredDep[], frameworksJson: Json): RestoreFlags {
+  const lock = prop(restore, 'restoreLockProperties');
+  const lockProps = isObject(lock) ? lock : undefined;
+  const lockFilePath = prop(lockProps, 'nuGetLockFilePath');
+  let cpm = triState(prop(restore, 'centralPackageVersionsManagementEnabled'));
+  let cpmEvidence: RestoreFlags['cpmEvidence'] = cpm === 'unknown' ? 'none' : 'restore';
+  const centralVersions = Object.values(frameworksJson).some((fw) => isObject(fw) && isObject(fw.centralPackageVersions) && Object.keys(fw.centralPackageVersions).length > 0);
+  if (cpm === 'unknown' && (centralVersions || declared.some((d) => d.centrallyManaged))) {
+    cpm = 'enabled';
+    cpmEvidence = 'dependency';
+  }
+  return {
+    lockFile: triState(prop(lockProps, 'restorePackagesWithLockFile')),
+    lockedMode: triState(prop(lockProps, 'restoreLockedMode')),
+    lockFilePath: typeof lockFilePath === 'string' ? lockFilePath : undefined,
+    cpm,
+    cpmEvidence,
+    transitivePinning: triState(prop(restore, 'CentralPackageTransitivePinningEnabled')),
+  };
 }
 
 interface LibraryInfo {
@@ -92,18 +135,27 @@ export function parseAssetsJson(input: ParseInput): ParseResult {
     }
     packageRoots.set(fw === '' ? '' : normalizeFramework(fw), deps);
   }
-  // Fallback: project.frameworks[alias].dependencies when projectFileDependencyGroups is absent.
+  // Declared references per framework: project.frameworks[alias].dependencies, with the raw range.
   const frameworksJson = project && isObject(project.frameworks) ? project.frameworks : {};
-  if (packageRoots.size === 0) {
-    for (const [alias, fwValue] of Object.entries(frameworksJson)) {
-      if (!isObject(fwValue) || !isObject(fwValue.dependencies)) continue;
-      const deps: DirectDep[] = [];
-      for (const [id, dep] of Object.entries(fwValue.dependencies)) {
-        const range = isObject(dep) && typeof dep.version === 'string' ? dep.version : typeof dep === 'string' ? dep : '';
-        deps.push({ id, range, kind: 'packageReference' });
-      }
-      packageRoots.set(normalizeFramework(alias), deps);
+  const declaredByTfm = new Map<string, DeclaredDep[]>();
+  for (const [alias, fwValue] of Object.entries(frameworksJson)) {
+    if (!isObject(fwValue) || !isObject(fwValue.dependencies)) continue;
+    const deps: DeclaredDep[] = [];
+    for (const [id, dep] of Object.entries(fwValue.dependencies)) {
+      const d = isObject(dep) ? dep : {};
+      deps.push({
+        id,
+        range: typeof d.version === 'string' ? d.version : typeof dep === 'string' ? dep : '',
+        centrallyManaged: d.versionCentrallyManaged === true,
+        autoReferenced: d.autoReferenced === true,
+        versionOverride: typeof d.versionOverride === 'string' ? d.versionOverride : undefined,
+      });
     }
+    declaredByTfm.set(normalizeFramework(alias), deps);
+  }
+  // Fallback: the declared references when projectFileDependencyGroups is absent.
+  if (packageRoots.size === 0) {
+    for (const [tfm, deps] of declaredByTfm) packageRoots.set(tfm, deps.map((d) => ({ id: d.id, range: d.range, kind: 'packageReference' as const })));
   }
 
   // Project references per normalized framework, as absolute path keys.
@@ -212,7 +264,10 @@ export function parseAssetsJson(input: ParseInput): ParseResult {
       }
     }
 
-    targets.push({ key: targetKey, tfm, rid, nodes, roots });
+    let declared = declaredByTfm.get(tfm);
+    if (!declared && declaredByTfm.size === 1 && baseFrameworks.size === 1) declared = [...declaredByTfm.values()][0];
+
+    targets.push({ key: targetKey, tfm, rid, nodes, roots, declared: declared ?? [] });
   }
 
   if (targets.length === 0) warnings.push('The file contains no targets.');
@@ -226,6 +281,7 @@ export function parseAssetsJson(input: ParseInput): ParseResult {
     projectPath,
     projectVersion,
     sources,
+    restoreFlags: readRestoreFlags(restore, [...declaredByTfm.values()].flat(), frameworksJson),
     targets,
     warnings,
   };

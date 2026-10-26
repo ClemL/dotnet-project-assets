@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { bindingOriginResolver, buildCorrelation, compareAssemblyVersions, isInternalSide, lookupLoadError, parseAssemblyVersion, parseLoadErrors, rowIsInternal } from '@/lib/binding';
 import type { AssemblyCopies, BindingIssue, BindingResult, BindingSeverity, ClassifyOutput, ClassifySettings, CorrelationRow, PackageLink } from '@/lib/types';
-import { compareVersionStrings } from '@/lib/version';
+import { compareVersionStrings } from '@/lib/versions';
 import { SCRIPT_URL } from '../input/BindingInputs';
 import { Banner } from '../ui/Banner';
 import { DataTable, type Column } from '../ui/DataTable';
@@ -31,6 +31,7 @@ interface Ctx {
   result: BindingResult;
   canJump: boolean;
   onJump: (packageId: string) => void;
+  onJumpSkew?: (packageId: string) => void;
 }
 
 function PackageCell({ link, ctx, outside }: { link: PackageLink | undefined; ctx: Ctx; outside: string }) {
@@ -46,6 +47,11 @@ function PackageCell({ link, ctx, outside }: { link: PackageLink | undefined; ct
       )}{' '}
       <span className="text-ink-2">{link.packageVersion}</span>
       {link.packageType !== 'package' ? <span className="ml-1 rounded bg-surface-2 px-1 font-sans text-[10px] text-ink-2">{link.packageType}</span> : null}
+      {ctx.canJump && ctx.onJumpSkew ? (
+        <button type="button" className={cx(linkBtn, 'ml-1 font-sans text-[11px]')} title="Show in the version skew view" onClick={() => ctx.onJumpSkew?.(link.packageId)}>
+          skew
+        </button>
+      ) : null}
     </span>
   );
 }
@@ -278,6 +284,7 @@ export function BindingCheck({
   settings,
   canJump,
   onJump,
+  onJumpSkew,
 }: {
   result: BindingResult;
   classification: ClassifyOutput | undefined;
@@ -285,6 +292,7 @@ export function BindingCheck({
   /** Whether project.assets.json files are analyzed, so packages can be shown in the tree. */
   canJump: boolean;
   onJump: (packageId: string) => void;
+  onJumpSkew?: (packageId: string) => void;
 }) {
   const [severity, setSeverity] = useState<SeverityFilter>('problems');
   const [internalOnly, setInternalOnly] = useState(true);
@@ -292,7 +300,7 @@ export function BindingCheck({
   const [query, setQuery] = useState('');
   const [nonMonotonicOnly, setNonMonotonicOnly] = useState(false);
 
-  const ctx: Ctx = { result, canJump, onJump };
+  const ctx: Ctx = { result, canJump, onJump, onJumpSkew };
   const originOf = useMemo(() => bindingOriginResolver(classification, settings), [classification, settings]);
 
   // Internal/framework filters apply to the cards and the table; severity and text only to the table.

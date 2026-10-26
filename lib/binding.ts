@@ -43,7 +43,7 @@ import type {
   ParsedLoadError,
   RuntimeConfigInfo,
 } from './types';
-import { compareVersionStrings } from './version';
+import { compareVersionStrings } from './versions';
 
 // ---------------------------------------------------------------------------
 // Assembly versions

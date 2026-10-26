@@ -22,6 +22,39 @@ export interface TargetNode {
   dependencies: Record<string, string>;
 }
 
+/** One entry of project.frameworks[alias].dependencies, as written by NuGet. */
+export interface DeclaredDep {
+  id: string;
+  /** "version" exactly as written, e.g. "[10.0.*-*, )"; empty when absent. */
+  range: string;
+  /** versionCentrallyManaged (written only when true). */
+  centrallyManaged: boolean;
+  /** autoReferenced (written only when true), e.g. implicit SDK references. */
+  autoReferenced: boolean;
+  /** versionOverride under Central Package Management. */
+  versionOverride?: string;
+}
+
+export type TriState = 'enabled' | 'disabled' | 'unknown';
+
+/**
+ * Restore settings from project.restore. NuGet writes these flags only when they are set (true),
+ * so an absent flag is "unknown", never "disabled".
+ */
+export interface RestoreFlags {
+  /** restoreLockProperties.restorePackagesWithLockFile (a string: "true" / "false"). */
+  lockFile: TriState;
+  /** restoreLockProperties.restoreLockedMode. */
+  lockedMode: TriState;
+  lockFilePath?: string;
+  /** centralPackageVersionsManagementEnabled. */
+  cpm: TriState;
+  /** Where the CPM state came from: the restore flag, versionCentrallyManaged on a dependency, or nothing. */
+  cpmEvidence: 'restore' | 'dependency' | 'none';
+  /** CentralPackageTransitivePinningEnabled (capital C in the file). */
+  transitivePinning: TriState;
+}
+
 export interface DirectDep {
   id: string;
   /** Requested range as a NuGet range string ("[1.0.0, )"); empty for project references. */
@@ -37,6 +70,8 @@ export interface TargetGraph {
   rid?: string;
   nodes: Record<IdKey, TargetNode>;
   roots: DirectDep[];
+  /** project.frameworks[alias].dependencies for this target's framework (empty when absent). */
+  declared: DeclaredDep[];
 }
 
 export interface ProjectModel {
@@ -49,6 +84,7 @@ export interface ProjectModel {
   projectVersion: string;
   /** Keys of project.restore.sources. */
   sources: string[];
+  restoreFlags: RestoreFlags;
   targets: TargetGraph[];
   warnings: string[];
 }
@@ -575,4 +611,166 @@ export interface BindingResult {
   copies: AssemblyCopies[];
   counts: Record<BindingSeverity, number>;
   warnings: string[];
+}
+
+// ---------------------------------------------------------------------------
+// Version skew (lib/versions.ts, lib/skew.ts, lib/floating.ts)
+// ---------------------------------------------------------------------------
+
+/** How two versions differ: 'build' when a lag is computable, otherwise the highest differing part. */
+export type VersionDiff = 'equal' | 'build' | 'major' | 'minor' | 'patch' | 'revision' | 'prerelease';
+
+export type RangeKind = 'floatingPrerelease' | 'floatingStable' | 'openEnded' | 'bounded' | 'pinned' | 'unknown';
+
+export type Severity = 'none' | 'info' | 'low' | 'medium' | 'high';
+
+export type RebuildSeverity = 'low' | 'medium' | 'high';
+
+export interface SkewSettings {
+  /** Regex source; capture group 1 is the build number. */
+  buildNumberPattern: string;
+  /** Minimum spread/lag for each severity. */
+  thresholds: { low: number; medium: number; high: number };
+  rebuildMinSeverity: RebuildSeverity;
+  cascade: boolean;
+  includePublic: boolean;
+}
+
+export interface SkewEdge {
+  target: string;
+  tfm: string;
+  childKey: IdKey;
+  /** Casing from the resolved targets key. */
+  child: string;
+  resolvedVersion: string;
+  childOrigin?: Origin;
+  parentKey: IdKey;
+  parent: string;
+  parentVersion: string;
+  parentOrigin?: Origin;
+  /** Range exactly as written. */
+  requestedRange: string;
+  /** Lower bound; the resolved version for a satisfied float; undefined without a lower bound. */
+  requestedVersion?: string;
+  requestedBuild: number | null;
+  resolvedBuild: number | null;
+  diff: VersionDiff;
+  /** resolved build − requested build; null → "n/a (semver)". */
+  lag: number | null;
+  stale: boolean;
+  severity: Severity;
+  isDirect: boolean;
+  isFloating: boolean;
+  /** Projects (file labels) whose graph contains this edge. */
+  projects: string[];
+}
+
+export interface RequestedGroup {
+  requestedVersion: string;
+  build: number | null;
+  requesters: { parent: string; parentKey: IdKey; isDirect: boolean; range: string }[];
+}
+
+export interface SkewRow {
+  rowId: string;
+  target: string;
+  tfm: string;
+  childKey: IdKey;
+  child: string;
+  origin?: Origin;
+  resolvedVersion: string;
+  resolvedBuild: number | null;
+  /** Ascending by requested version. */
+  groups: RequestedGroup[];
+  /** Every in-scope edge into the child, for the expanded view. */
+  edges: SkewEdge[];
+  oldestRequested: string;
+  oldestRequesters: string[];
+  oldestRequesterKeys: IdKey[];
+  spread: number | null;
+  spreadDiff: VersionDiff;
+  severity: Severity;
+  /** Projects that resolve this version (merged view). */
+  shippedBy: string[];
+  /** Other versions of the same package resolved by other projects for the same target (cross-project drift). */
+  drift: string[];
+}
+
+export interface ConsumerRow {
+  parentKey: IdKey;
+  parent: string;
+  versions: string[];
+  origin?: Origin;
+  isRootProject: boolean;
+  staleEdges: number;
+  oldestInRow: number;
+  maxLag: number | null;
+  medianLag: number | null;
+  worstDiff: VersionDiff;
+  severity: Severity;
+  action: string;
+}
+
+export interface RebuildStep {
+  wave: number;
+  key: IdKey;
+  id: string;
+  origin?: Origin;
+  reason: 'stale' | 'cascade';
+  /** stale: the outdated dependencies; cascade: the rebuilt packages it consumes. */
+  because: string[];
+}
+
+export interface RebuildPlan {
+  minSeverity: RebuildSeverity;
+  cascade: boolean;
+  steps: RebuildStep[];
+  /** Cycles among the rebuild set (no complete order exists). */
+  cycles: IdKey[][];
+  blocked: IdKey[];
+}
+
+export interface CasingNote {
+  key: IdKey;
+  /** Casing of the resolved targets key. */
+  display: string;
+  variants: { spelling: string; seenIn: string[] }[];
+}
+
+export interface SkewReport {
+  internal: SkewRow[];
+  public: SkewRow[];
+  consumers: ConsumerRow[];
+  outlier?: { consumer: ConsumerRow; message: string };
+  rebuild: RebuildPlan;
+  casing: CasingNote[];
+  counts: Record<'high' | 'medium' | 'low', number>;
+  warnings: string[];
+}
+
+export interface FloatingRef {
+  project: string;
+  target: string;
+  key: IdKey;
+  id: string;
+  range: string;
+  kind: RangeKind;
+  severity: Severity;
+  centrallyManaged: boolean;
+  autoReferenced: boolean;
+  versionOverride?: string;
+  resolvedVersion?: string;
+  origin?: Origin;
+  /** Internal consumers that request an older version than the float resolved to. */
+  olderConsumers?: { min: string; max: string; parents: string[]; rowId?: string };
+  note?: string;
+}
+
+export interface FloatingReport {
+  refs: FloatingRef[];
+  restore: { project: string; flags: RestoreFlags }[];
+  floatingCount: number;
+  /** Floating references exist and at least one of their projects has no lock file detected. */
+  recommend: boolean;
+  snippets: { lockFile: string; cpm: string };
 }

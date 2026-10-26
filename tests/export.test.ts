@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { classifyAndOrder } from '../lib/analyze';
 import { DEFAULT_SETTINGS } from '../lib/classify';
-import { buildFileName, buildOrderCsv, csvCell, dependenciesCsv, formatTimestamp, jsonReport, markdownReport, sanitizeName } from '../lib/export';
+import { buildFileName, buildOrderCsv, csvCell, dependenciesCsv, formatTimestamp, jsonReport, markdownReport, sanitizeName, skewCsv } from '../lib/export';
+import { DEFAULT_SKEW_SETTINGS } from '../lib/skew';
 import { analyzeFixtures } from './helpers';
 
 const when = new Date(2026, 9, 26, 14, 5);
@@ -74,5 +75,51 @@ describe('reports', () => {
     expect(parsed.tool).toBe('assets-graph');
     expect(parsed.dependencies.map((d: { key: string }) => d.key)).toEqual(['lib.a', 'lib.b', 'lib.c', 'lib.d']);
     expect(parsed.graph.edges.length).toBe(5);
+  });
+});
+
+describe('version skew export', () => {
+  const a = analyzeFixtures('skew/rx-api.assets.json');
+  const settings = { ...DEFAULT_SETTINGS, offline: true, internalPrefixes: ['Model.', 'Plugin.'] };
+  const r = classifyAndOrder(a, { settings, lookups: {}, metadata: {}, overrides: {} }, { includeProjects: true }, { ...DEFAULT_SKEW_SETTINGS, includePublic: true });
+
+  it('writes one CSV row per stale edge', () => {
+    const lines = skewCsv(r.skew.merged!).replace(/^﻿/, '').trim().split('\r\n');
+    expect(lines[0]).toBe('tfm,child,resolvedVersion,parent,parentVersion,requestedRange,requestedVersion,lag,severity,isDirect,isFloating,projects');
+    expect(lines).toContain('net10.0,Model.Ref,10.0.0-13570,Model.PBM,10.0.0-13300,10.0.0-12986,10.0.0-12986,584,high,false,false,Rx.Api');
+    expect(lines).toContain('net10.0,Microsoft.Data.SqlClient,7.1.1,Model.PBM,10.0.0-13300,6.1.1,6.1.1,n/a (semver),high,false,false,Rx.Api');
+    // Internal: 2 Model.Ref + 1 Model.CQE + 3 Model.Import (the direct float is not stale).
+    // Public: 2 SqlClient + the direct Polly [8.0.0, 9.0.0) that resolved to 8.5.0 (minor).
+    expect(lines).toContain('net10.0,Polly,8.5.0,Rx.Api,1.0.0,"[8.0.0, 9.0.0)",8.0.0,n/a (semver),medium,true,false,Rx.Api');
+    expect(lines.length - 1).toBe(9);
+  });
+
+  it('adds a Version skew section to the Markdown and JSON reports', () => {
+    const input = {
+      generatedAt: when,
+      scope: a.merged,
+      models: a.models,
+      errors: [],
+      classification: r.classification,
+      buildOrder: r.buildOrders.merged,
+      settings,
+      options: { ...a.options, includeProjects: true },
+      skew: r.skew.merged,
+      floating: r.floating.merged,
+      skewSettings: { ...DEFAULT_SKEW_SETTINGS, includePublic: true },
+    };
+    const text = markdownReport(input);
+    for (const heading of ['## Version skew', '### Per-package skew (3)', '### Public and system packages (2)', '### Consumer staleness ranking (4)', '### Rebuild plan (4)', '### Floating and unpinned references (3 floating)']) {
+      expect(text).toContain(heading);
+    }
+    expect(text).toContain('| net10.0 | Model.Import (10.0.0-13615) | 13388 → Model.CQE, Model.PBM; 13463 → Model.Landing; 13615 ← direct ref [10.0.*-*, ) | 227 | Model.CQE, Model.PBM | high |');
+    expect(text).toContain('> **Outlier:** Model.PBM is the oldest requester in 2 packages');
+    const json = JSON.parse(jsonReport(input));
+    expect(json.versionSkew.skew.internal).toHaveLength(3);
+    expect(json.versionSkew.floating.floatingCount).toBe(3);
+  });
+
+  it('keeps the timestamped file name pattern', () => {
+    expect(buildFileName('Rx.Api', 'csv', when, 'VersionSkew')).toBe('AssetsGraph_Rx.Api-VersionSkew_20261026_1405.csv');
   });
 });

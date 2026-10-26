@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { buildTree, pathNodesTo, selectTargets, targetCycles, treeParents, whyPaths } from '@/lib/graph';
 import { metadataKey } from '@/lib/metadata';
 import type { ClassifyOutput, DepTreeNode, IdKey, Origin, ProjectModel, TargetGraph } from '@/lib/types';
-import { describeRange } from '@/lib/version';
+import { describeRange } from '@/lib/versions';
 import { Banner } from '../ui/Banner';
 import { OriginDot } from '../ui/OriginBadge';
 import { btnSmall, cx, field, hint } from '../ui/styles';

@@ -1,7 +1,7 @@
 // Messages between the UI thread and workers/analyze.worker.ts.
 
 import type { BuildOrderOptions, ClassifiedResult } from '../lib/analyze';
-import type { AnalysisResult, AnalyzeOptions, BindingResult, ClassifyInput, InputKind, SourceMap } from '../lib/types';
+import type { AnalysisResult, AnalyzeOptions, BindingResult, ClassifyInput, InputKind, SkewSettings, SourceMap } from '../lib/types';
 
 export interface AnalyzeInputMessage {
   inputId: string;
@@ -27,7 +27,7 @@ export interface MetadataFileMessage {
 
 export type WorkerRequest =
   | { type: 'analyze'; requestId: number; inputs: AnalyzeInputMessage[]; options: AnalyzeOptions; systemPrefixes: string[] }
-  | { type: 'classify'; requestId: number; input: Omit<ClassifyInput, 'packages'>; buildOrder: BuildOrderOptions }
+  | { type: 'classify'; requestId: number; input: Omit<ClassifyInput, 'packages'>; buildOrder: BuildOrderOptions; skew: SkewSettings }
   | { type: 'loadPackagesFolder'; requestId: number; files: MetadataFileMessage[] }
   | { type: 'binding'; requestId: number; inputs: BindingInputMessage[] };
 
