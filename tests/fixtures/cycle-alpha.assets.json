@@ -1,0 +1,23 @@
+{
+  "version": 3,
+  "targets": {
+    "net8.0": {
+      "Acme.Beta/1.0.0": { "type": "package", "dependencies": { "Acme.Shared": "1.0.0" } },
+      "Acme.Shared/1.0.0": { "type": "package", "dependencies": { "Acme.Beta": "1.0.0" } }
+    }
+  },
+  "libraries": {
+    "Acme.Beta/1.0.0": { "sha512": "B", "type": "package", "path": "acme.beta/1.0.0" },
+    "Acme.Shared/1.0.0": { "sha512": "S", "type": "package", "path": "acme.shared/1.0.0" }
+  },
+  "projectFileDependencyGroups": { "net8.0": ["Acme.Beta >= 1.0.0"] },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectName": "Acme.Alpha",
+      "projectPath": "C:\\dev\\git\\Alpha\\Acme.Alpha\\Acme.Alpha.csproj",
+      "sources": { "https://api.nuget.org/v3/index.json": {} },
+      "frameworks": { "net8.0": { "targetAlias": "net8.0", "projectReferences": {} } }
+    }
+  }
+}

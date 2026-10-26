@@ -1,0 +1,63 @@
+{
+  "version": 3,
+  "targets": {
+    "net8.0": {
+      "Lib.A/1.0.0": {
+        "type": "package",
+        "dependencies": { "Lib.C": "1.0.0" },
+        "compile": { "lib/net8.0/Lib.A.dll": {} },
+        "runtime": { "lib/net8.0/Lib.A.dll": {} }
+      },
+      "Lib.B/1.0.0": {
+        "type": "package",
+        "dependencies": { "Lib.C": "1.1.0" },
+        "compile": { "lib/net8.0/Lib.B.dll": {} },
+        "runtime": { "lib/net8.0/Lib.B.dll": {} }
+      },
+      "Lib.C/1.1.0": {
+        "type": "package",
+        "dependencies": { "Lib.D": "2.0.0" },
+        "compile": { "lib/net8.0/Lib.C.dll": {} },
+        "runtime": { "lib/net8.0/Lib.C.dll": {} }
+      },
+      "Lib.D/2.0.0": {
+        "type": "package",
+        "compile": { "lib/net8.0/Lib.D.dll": {} },
+        "runtime": { "lib/net8.0/Lib.D.dll": {} }
+      }
+    }
+  },
+  "libraries": {
+    "Lib.A/1.0.0": { "sha512": "AAAA", "type": "package", "path": "lib.a/1.0.0", "files": ["lib.a.1.0.0.nupkg.sha512", "lib.a.nuspec", "lib/net8.0/Lib.A.dll"] },
+    "Lib.B/1.0.0": { "sha512": "BBBB", "type": "package", "path": "lib.b/1.0.0", "files": ["lib.b.1.0.0.nupkg.sha512", "lib.b.nuspec", "lib/net8.0/Lib.B.dll"] },
+    "Lib.C/1.1.0": { "sha512": "CCCC", "type": "package", "path": "lib.c/1.1.0", "files": ["lib.c.1.1.0.nupkg.sha512", "lib.c.nuspec", "lib/net8.0/Lib.C.dll"] },
+    "Lib.D/2.0.0": { "sha512": "DDDD", "type": "package", "path": "lib.d/2.0.0", "files": ["lib.d.2.0.0.nupkg.sha512", "lib.d.nuspec", "lib/net8.0/Lib.D.dll"] }
+  },
+  "projectFileDependencyGroups": {
+    "net8.0": ["Lib.A >= 1.0.0", "Lib.B >= 1.0.0"]
+  },
+  "packageFolders": { "C:\\Users\\dev\\.nuget\\packages\\": {} },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\dev\\git\\Diamond\\DiamondApp\\DiamondApp.csproj",
+      "projectName": "DiamondApp",
+      "projectPath": "C:\\dev\\git\\Diamond\\DiamondApp\\DiamondApp.csproj",
+      "packagesPath": "C:\\Users\\dev\\.nuget\\packages\\",
+      "outputPath": "C:\\dev\\git\\Diamond\\DiamondApp\\obj\\",
+      "projectStyle": "PackageReference",
+      "originalTargetFrameworks": ["net8.0"],
+      "sources": { "https://api.nuget.org/v3/index.json": {} },
+      "frameworks": { "net8.0": { "targetAlias": "net8.0", "projectReferences": {} } }
+    },
+    "frameworks": {
+      "net8.0": {
+        "targetAlias": "net8.0",
+        "dependencies": {
+          "Lib.A": { "target": "Package", "version": "[1.0.0, )" },
+          "Lib.B": { "target": "Package", "version": "[1.0.0, )" }
+        }
+      }
+    }
+  }
+}

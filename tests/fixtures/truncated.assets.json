@@ -1,0 +1,5 @@
+{
+  "version": 3,
+  "targets": {
+    "net8.0": {
+      "Lib.A/1.0.0": { "type": "package", "dependencies": { "Lib.C": "1.0.0" }

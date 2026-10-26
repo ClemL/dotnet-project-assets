@@ -1,0 +1,9 @@
+{
+  "acme.core/1.0.0": "https://pkgs.dev.azure.com/inscriptrx/_packaging/acme/nuget/v3/index.json",
+  "Acme.Logging/1.2.0": "https://pkgs.dev.azure.com/inscriptrx/_packaging/acme/nuget/v3/index.json",
+  "newtonsoft.json/13.0.1": "https://api.nuget.org/v3/index.json",
+  "microsoft.extensions.logging/8.0.0": "https://api.nuget.org/v3/index.json",
+  "contoso.plugin/2.0.0": "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+  "broken-entry": "https://api.nuget.org/v3/index.json",
+  "bad.version/not-a-version": "https://api.nuget.org/v3/index.json"
+}

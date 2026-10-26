@@ -1,0 +1,73 @@
+{
+  "version": 3,
+  "targets": {
+    "net8.0": {
+      "Acme.Core/1.0.0": {
+        "type": "package",
+        "dependencies": { "Newtonsoft.Json": "13.0.1" },
+        "compile": { "lib/net8.0/Acme.Core.dll": {} },
+        "runtime": { "lib/net8.0/Acme.Core.dll": {} }
+      },
+      "Acme.Logging/1.2.0": {
+        "type": "package",
+        "dependencies": { "Microsoft.Extensions.Logging": "8.0.0" }
+      },
+      "Contoso.Plugin/2.0.0": {
+        "type": "package",
+        "dependencies": { "Acme.Core": "1.0.0" }
+      },
+      "Microsoft.EntityFrameworkCore/8.0.0": {
+        "type": "package",
+        "dependencies": { "Microsoft.Extensions.Logging": "8.0.0" }
+      },
+      "Microsoft.Extensions.Logging/8.0.0": { "type": "package" },
+      "Newtonsoft.Json/13.0.1": { "type": "package" },
+      "Acme.Data/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "Acme.Core": "1.0.0",
+          "Microsoft.EntityFrameworkCore": "8.0.0"
+        },
+        "compile": { "bin/placeholder/Acme.Data.dll": {} },
+        "runtime": { "bin/placeholder/Acme.Data.dll": {} }
+      }
+    }
+  },
+  "libraries": {
+    "Acme.Core/1.0.0": { "sha512": "AC", "type": "package", "path": "acme.core/1.0.0" },
+    "Acme.Logging/1.2.0": { "sha512": "AL", "type": "package", "path": "acme.logging/1.2.0" },
+    "Contoso.Plugin/2.0.0": { "sha512": "CP", "type": "package", "path": "contoso.plugin/2.0.0" },
+    "Microsoft.EntityFrameworkCore/8.0.0": { "sha512": "EF", "type": "package", "path": "microsoft.entityframeworkcore/8.0.0" },
+    "Microsoft.Extensions.Logging/8.0.0": { "sha512": "ML", "type": "package", "path": "microsoft.extensions.logging/8.0.0" },
+    "Newtonsoft.Json/13.0.1": { "sha512": "NJ", "type": "package", "path": "newtonsoft.json/13.0.1" },
+    "Acme.Data/1.0.0": { "type": "project", "path": "../Acme.Data/Acme.Data.csproj", "msbuildProject": "../Acme.Data/Acme.Data.csproj" }
+  },
+  "projectFileDependencyGroups": {
+    "net8.0": ["Acme.Logging >= 1.2.0", "Contoso.Plugin >= 2.0.0"]
+  },
+  "project": {
+    "version": "2.4.0",
+    "restore": {
+      "projectUniqueName": "C:\\dev\\git\\Acme\\src\\Acme.Web\\Acme.Web.csproj",
+      "projectName": "Acme.Web",
+      "projectPath": "C:\\dev\\git\\Acme\\src\\Acme.Web\\Acme.Web.csproj",
+      "projectStyle": "PackageReference",
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {},
+        "https://pkgs.dev.azure.com/inscriptrx/_packaging/acme/nuget/v3/index.json": {}
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "projectReferences": {
+            "C:\\dev\\git\\Acme\\src\\Acme.Data\\Acme.Data.csproj": {
+              "projectPath": "C:\\dev\\git\\Acme\\src\\Acme.Data\\Acme.Data.csproj"
+            }
+          }
+        }
+      }
+    }
+  }
+}

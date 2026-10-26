@@ -1,0 +1,23 @@
+{
+  "version": 3,
+  "targets": {
+    "net8.0": {
+      "Newtonsoft.Json/13.0.3": { "type": "package" },
+      "Serilog/3.1.1": { "type": "package" }
+    }
+  },
+  "libraries": {
+    "Newtonsoft.Json/13.0.3": { "sha512": "N", "type": "package", "path": "newtonsoft.json/13.0.3" },
+    "Serilog/3.1.1": { "sha512": "S", "type": "package", "path": "serilog/3.1.1" }
+  },
+  "projectFileDependencyGroups": { "net8.0": ["Newtonsoft.Json >= 13.0.3", "Serilog >= 3.1.1"] },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectName": "Pharmacy.Worker",
+      "projectPath": "C:\\dev\\git\\Pharmacy.Worker\\Pharmacy.Worker.csproj",
+      "sources": { "https://api.nuget.org/v3/index.json": {} },
+      "frameworks": { "net8.0": { "targetAlias": "net8.0", "projectReferences": {} } }
+    }
+  }
+}

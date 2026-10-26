@@ -1,0 +1,27 @@
+{
+  "version": 3,
+  "targets": {
+    "net8.0": {
+      "Lib.A/2.0.0": { "type": "package", "dependencies": { "Shared.Core": "[1.0.0, 2.0.0)" } },
+      "Lib.B/1.0.0": { "type": "package", "dependencies": { "Shared.Core": "2.1.0" } },
+      "Shared.Core/2.1.0": { "type": "package" }
+    }
+  },
+  "libraries": {
+    "Lib.A/2.0.0": { "sha512": "AAAA", "type": "package", "path": "lib.a/2.0.0" },
+    "Lib.B/1.0.0": { "sha512": "BBBB", "type": "package", "path": "lib.b/1.0.0" },
+    "Shared.Core/2.1.0": { "sha512": "SSSS", "type": "package", "path": "shared.core/2.1.0" }
+  },
+  "projectFileDependencyGroups": {
+    "net8.0": ["Lib.A >= 2.0.0", "Lib.B >= 1.0.0"]
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectName": "ConflictApp",
+      "projectPath": "C:\\dev\\git\\Conflict\\ConflictApp\\ConflictApp.csproj",
+      "sources": { "https://api.nuget.org/v3/index.json": {} },
+      "frameworks": { "net8.0": { "targetAlias": "net8.0", "projectReferences": {} } }
+    }
+  }
+}

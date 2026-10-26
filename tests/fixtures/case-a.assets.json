@@ -1,0 +1,21 @@
+{
+  "version": 3,
+  "targets": {
+    "net8.0": {
+      "Acme.Utils/1.0.0": { "type": "package" }
+    }
+  },
+  "libraries": {
+    "Acme.Utils/1.0.0": { "sha512": "U", "type": "package", "path": "acme.utils/1.0.0" }
+  },
+  "projectFileDependencyGroups": { "net8.0": ["Acme.Utils >= 1.0.0"] },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectName": "Reports.Web",
+      "projectPath": "C:\\dev\\git\\Reports\\Reports.Web\\Reports.Web.csproj",
+      "sources": { "https://api.nuget.org/v3/index.json": {} },
+      "frameworks": { "net8.0": { "targetAlias": "net8.0", "projectReferences": {} } }
+    }
+  }
+}

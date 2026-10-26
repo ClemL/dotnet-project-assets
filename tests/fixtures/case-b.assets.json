@@ -1,0 +1,21 @@
+{
+  "version": 3,
+  "targets": {
+    "net8.0": {
+      "acme.utils/1.2.0": { "type": "package" }
+    }
+  },
+  "libraries": {
+    "acme.utils/1.2.0": { "sha512": "U", "type": "package", "path": "acme.utils/1.2.0" }
+  },
+  "projectFileDependencyGroups": { "net8.0": ["acme.utils >= 1.2.0"] },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectName": "Reports.Jobs",
+      "projectPath": "C:\\dev\\git\\Reports\\Reports.Jobs\\Reports.Jobs.csproj",
+      "sources": { "https://api.nuget.org/v3/index.json": {} },
+      "frameworks": { "net8.0": { "targetAlias": "net8.0", "projectReferences": {} } }
+    }
+  }
+}

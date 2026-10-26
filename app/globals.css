@@ -1,0 +1,182 @@
+@import "tailwindcss";
+
+/* Design tokens. Light values on :root; dark values under the OS preference (unless the page is
+   stamped light) and under an explicit data-theme="dark". */
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-2: #f0efec;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #6b6a65;
+  --line: #e1e0d9;
+  --line-strong: #c3c2b7;
+  --accent: #2a78d6;
+  --accent-ink: #ffffff;
+  --mark: #fff1b8;
+  --warn-bg: #fff6dd;
+  --warn-line: #eda100;
+  --warn-ink: #5c4000;
+  --danger: #d03b3b;
+  --danger-bg: #fdeeee;
+  --danger-ink: #8f1f1f;
+  --ok: #006300;
+  --info-bg: #eaf2fc;
+  --info-ink: #184f95;
+
+  /* Origins: categorical slots, assigned per origin and never re-ordered. */
+  --origin-project: #2a78d6;
+  --origin-private: #eb6834;
+  --origin-public: #1baf7a;
+  --origin-unclassified: #eda100;
+  --origin-inferred: #e87ba4;
+  --origin-system: #6250d6;
+
+  /* Ordinal wave ramp (blue 250 → 700). */
+  --wave-0: #86b6ef;
+  --wave-1: #6da7ec;
+  --wave-2: #5598e7;
+  --wave-3: #3987e5;
+  --wave-4: #2a78d6;
+  --wave-5: #256abf;
+  --wave-6: #1c5cab;
+  --wave-7: #184f95;
+  --wave-8: #104281;
+  --wave-9: #0d366b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-2: #242422;
+    --ink: #f0efec;
+    --ink-2: #c3c2b7;
+    --muted: #a3a29b;
+    --line: #2c2c2a;
+    --line-strong: #45453f;
+    --accent: #3987e5;
+    --accent-ink: #ffffff;
+    --mark: #4a3f10;
+    --warn-bg: #2e2410;
+    --warn-line: #c98500;
+    --warn-ink: #f5d38a;
+    --danger: #e66767;
+    --danger-bg: #351616;
+    --danger-ink: #f6b4b4;
+    --ok: #0ca30c;
+    --info-bg: #14243a;
+    --info-ink: #b7d3f6;
+    --origin-project: #3987e5;
+    --origin-private: #d95926;
+    --origin-public: #199e70;
+    --origin-unclassified: #c98500;
+    --origin-inferred: #d55181;
+    --origin-system: #9085e9;
+    --wave-0: #184f95;
+    --wave-1: #1c5cab;
+    --wave-2: #256abf;
+    --wave-3: #2a78d6;
+    --wave-4: #3987e5;
+    --wave-5: #5598e7;
+    --wave-6: #6da7ec;
+    --wave-7: #86b6ef;
+    --wave-8: #9ec5f4;
+    --wave-9: #b7d3f6;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --surface-2: #242422;
+  --ink: #f0efec;
+  --ink-2: #c3c2b7;
+  --muted: #a3a29b;
+  --line: #2c2c2a;
+  --line-strong: #45453f;
+  --accent: #3987e5;
+  --accent-ink: #ffffff;
+  --mark: #4a3f10;
+  --warn-bg: #2e2410;
+  --warn-line: #c98500;
+  --warn-ink: #f5d38a;
+  --danger: #e66767;
+  --danger-bg: #351616;
+  --danger-ink: #f6b4b4;
+  --ok: #0ca30c;
+  --info-bg: #14243a;
+  --info-ink: #b7d3f6;
+  --origin-project: #3987e5;
+  --origin-private: #d95926;
+  --origin-public: #199e70;
+  --origin-unclassified: #c98500;
+  --origin-inferred: #d55181;
+  --origin-system: #9085e9;
+  --wave-0: #184f95;
+  --wave-1: #1c5cab;
+  --wave-2: #256abf;
+  --wave-3: #2a78d6;
+  --wave-4: #3987e5;
+  --wave-5: #5598e7;
+  --wave-6: #6da7ec;
+  --wave-7: #86b6ef;
+  --wave-8: #9ec5f4;
+  --wave-9: #b7d3f6;
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-mark: var(--mark);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-line: var(--warn-line);
+  --color-warn-ink: var(--warn-ink);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-ink: var(--danger-ink);
+  --color-ok: var(--ok);
+  --color-info-bg: var(--info-bg);
+  --color-info-ink: var(--info-ink);
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "Segoe UI Mono", Consolas, monospace;
+}
+
+html,
+body {
+  background: var(--page);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes flash {
+  from {
+    background-color: var(--mark);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+.flash {
+  animation: flash 1.6s ease-out;
+}

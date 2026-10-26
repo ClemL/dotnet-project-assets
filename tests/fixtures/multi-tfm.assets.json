@@ -1,0 +1,46 @@
+{
+  "version": 3,
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "Polly/8.2.0": { "type": "package", "dependencies": { "Polly.Core": "8.2.0" } },
+      "Polly.Core/8.2.0": { "type": "package" },
+      "System.Text.Json/8.0.0": { "type": "package" }
+    },
+    ".NETFramework,Version=v4.8": {
+      "Polly/8.2.0": { "type": "package", "dependencies": { "Polly.Core": "8.2.0" } },
+      "Polly.Core/8.2.0": { "type": "package", "dependencies": { "System.Memory": "4.5.4" } },
+      "System.Memory/4.5.4": { "type": "package" },
+      "System.Text.Json/6.0.0": { "type": "package", "dependencies": { "System.Memory": "4.5.4" } }
+    },
+    ".NETCoreApp,Version=v8.0/win-x64": {
+      "Polly/8.2.0": { "type": "package", "dependencies": { "Polly.Core": "8.2.0" } },
+      "Polly.Core/8.2.0": { "type": "package" },
+      "System.Text.Json/8.0.0": { "type": "package" },
+      "runtime.win-x64.Contoso.Native/1.0.0": { "type": "package" }
+    }
+  },
+  "libraries": {
+    "Polly/8.2.0": { "sha512": "P", "type": "package", "path": "polly/8.2.0" },
+    "Polly.Core/8.2.0": { "sha512": "PC", "type": "package", "path": "polly.core/8.2.0" },
+    "System.Memory/4.5.4": { "sha512": "SM", "type": "package", "path": "system.memory/4.5.4" },
+    "System.Text.Json/6.0.0": { "sha512": "J6", "type": "package", "path": "system.text.json/6.0.0" },
+    "System.Text.Json/8.0.0": { "sha512": "J8", "type": "package", "path": "system.text.json/8.0.0" },
+    "runtime.win-x64.Contoso.Native/1.0.0": { "sha512": "RN", "type": "package", "path": "runtime.win-x64.contoso.native/1.0.0" }
+  },
+  "projectFileDependencyGroups": {
+    ".NETCoreApp,Version=v8.0": ["Polly >= 8.2.0", "System.Text.Json >= 8.0.0"],
+    ".NETFramework,Version=v4.8": ["Polly >= 8.2.0", "System.Text.Json >= 6.0.0"]
+  },
+  "project": {
+    "version": "3.0.0",
+    "restore": {
+      "projectName": "MultiLib",
+      "projectPath": "C:\\dev\\git\\Multi\\MultiLib\\MultiLib.csproj",
+      "sources": { "https://api.nuget.org/v3/index.json": {} },
+      "frameworks": {
+        "net8.0": { "targetAlias": "net8.0", "projectReferences": {} },
+        "net48": { "targetAlias": "net48", "projectReferences": {} }
+      }
+    }
+  }
+}
