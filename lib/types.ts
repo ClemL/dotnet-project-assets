@@ -85,6 +85,12 @@ export interface ProjectModel {
   /** Keys of project.restore.sources. */
   sources: string[];
   restoreFlags: RestoreFlags;
+  /**
+   * "<id-lower>/<version-lower>" → whether libraries[*].files lists a .signature.p7s (nuget.org
+   * repository-signs every package; internal feeds usually serve unsigned ones). Absent when the
+   * library has no files list.
+   */
+  librarySigned: Record<string, boolean>;
   targets: TargetGraph[];
   warnings: string[];
 }
@@ -268,6 +274,8 @@ export type ReasonCode =
   | 'project'
   | 'system-prefix'
   | 'internal-prefix'
+  | 'signature-signed'
+  | 'signature-unsigned'
   | 'nuget-listed'
   | 'nuget-unlisted-version'
   | 'nuget-not-found'
@@ -305,6 +313,8 @@ export interface PackageRef {
   version: string;
   types: NodeType[];
   isRootProject: boolean;
+  /** .signature.p7s present in libraries[*].files; undefined when no files list was available. */
+  signed?: boolean;
 }
 
 export interface ClassifyInput {
@@ -392,7 +402,7 @@ export interface AnalysisResult {
 // Binding check (lib/bindingInputs.ts, lib/binding.ts)
 // ---------------------------------------------------------------------------
 
-export type BindingInputKind = 'deps' | 'manifest' | 'runtimeconfig';
+export type BindingInputKind = 'deps' | 'manifest' | 'runtimeconfig' | 'referencer' | 'packageMap';
 
 /** One runtime asset of a deps.json library. deps.json records file paths, not assembly names. */
 export interface DepsAsset {
@@ -611,6 +621,10 @@ export interface BindingResult {
   copies: AssemblyCopies[];
   counts: Record<BindingSeverity, number>;
   warnings: string[];
+  /** Referencer scans (Fix Planner input). */
+  scans: ReferencerScan[];
+  /** Package → assembly map entries from Export-PackageAssemblyMap.ps1 (Fix Planner input). */
+  packageMap: PackageAssemblyEntry[];
 }
 
 // ---------------------------------------------------------------------------
@@ -773,4 +787,133 @@ export interface FloatingReport {
   /** Floating references exist and at least one of their projects has no lock file detected. */
   recommend: boolean;
   snippets: { lockFile: string; cpm: string };
+}
+
+// ---------------------------------------------------------------------------
+// Fix Planner (lib/fixplanner.ts)
+// ---------------------------------------------------------------------------
+
+export interface ReferencerRow {
+  kind: 'REFERENCER' | 'DEPLOYED';
+  /** File name as given ("Plugin.Excel.dll"). */
+  dll: string;
+  /** Assembly simple name (file name without .dll / .exe). */
+  assembly: string;
+  /** The row's own AssemblyVersion. */
+  version: string;
+  /** REFERENCER rows: the version of the target assembly this DLL was compiled against. */
+  refersTo?: string;
+  path?: string;
+}
+
+export interface ReferencerScan {
+  source: 'table' | 'csv' | 'manifest' | 'binding';
+  fileName: string;
+  /** The scanned assembly, from the DEPLOYED rows; undefined when the scan has none. */
+  target?: string;
+  rows: ReferencerRow[];
+  warnings: string[];
+}
+
+export interface PackageAssemblyEntry {
+  id: string;
+  packageVersion: string;
+  dll: string;
+  assemblyVersion: string;
+  fileVersion: string | null;
+  tfm: string;
+}
+
+export interface OwnerLink {
+  packageId: string;
+  packageVersion?: string;
+  /** deps.json maps the file to its package; "by name" assumes the package Id equals the assembly name. */
+  match: 'deps.json' | 'by name';
+}
+
+export interface FailureRequester {
+  assembly: string;
+  dll: string;
+  version: string;
+  refersTo: string;
+  status: 'FAIL' | 'OK';
+  /** refersTo − deployed on the 4th component when major.minor.build match; null otherwise. */
+  delta: number | null;
+  owner?: OwnerLink;
+  path?: string;
+}
+
+export interface FailureSummary {
+  target: string;
+  targetOwner?: OwnerLink;
+  deployed?: { version: string; source: 'scan' | 'manifest' | 'deps.json'; others: string[] };
+  /** max(RefersTo): the lowest deployed version every requester binds to. */
+  requiredMinimum: string;
+  requesters: FailureRequester[];
+  failCount: number;
+  okCount: number;
+  /** Version named in the pasted exception (the first failure the runtime hit), if any. */
+  errorVersion?: string;
+}
+
+export interface StampedAssembly {
+  assembly: string;
+  /** Distinct versions observed (references to it and its own AssemblyVersion), ascending. */
+  versions: string[];
+  referencedVersions: number;
+  nonZeroRevision: boolean;
+  maxRevision: number;
+}
+
+export interface StampingReport {
+  stamped: StampedAssembly[];
+  /** Internal assemblies seen only at one x.y.z.0 version. */
+  fixedBaseline: number;
+  /** Internal assemblies observed. */
+  baselineTotal: number;
+  /** outlier: fixed assemblies outnumber stamped ones; codebase-wide: they do not. */
+  mode: 'none' | 'outlier' | 'codebase-wide';
+}
+
+export interface PinCandidate {
+  packageVersion: string;
+  assemblyVersion: string;
+  fileVersion: string | null;
+  tfm: string;
+  /** assemblyVersion ≥ the required minimum. */
+  bindsAll: boolean;
+  /** packageVersion ≥ every package-level minimum for the target in the graph (else NU1605 on restore). */
+  meetsNuGetMinimum: boolean;
+}
+
+export interface PinPlan {
+  packageId: string;
+  candidates: PinCandidate[];
+  recommended?: PinCandidate;
+  nugetMinimum?: { version: string; requestedBy: string[] };
+  snippet?: string;
+  cpmSnippet?: string;
+  /** Requesters that will bind to a higher version than they were compiled against. */
+  rollForward: FailureRequester[];
+  feedSearch: string;
+  noneReason?: string;
+}
+
+export interface CascadeRow {
+  /** Global wave index (0-based) over the fix graph. */
+  wave: number;
+  key: IdKey;
+  id: string;
+  reason: { kind: 'target' } | { kind: 'dependsOn'; on: string[] };
+  failRequester: boolean;
+  placement: 'assets' | 'dll-references';
+}
+
+export interface CascadePlan {
+  start?: IdKey;
+  startId?: string;
+  rows: CascadeRow[];
+  cycles: IdKey[][];
+  /** Why there is no cascade (no assets files, target not in the graph, …). */
+  unavailable?: string;
 }

@@ -46,6 +46,7 @@ $dest = 'C:\\dev\\results\\AssetsGraphInputs_{0}' -f (Get-Date -Format 'yyyyMMdd
 # Deployed apps: narrow with -NameFilter 'YourPrefix*'; run elevated to include IIS sites.
 .\\Collect-DeployedApps.ps1 -NameFilter '*' -RunManifest $true -Destination $dest
 .\\Export-NuGetSourceMap.ps1 -OutputFolder (Join-Path $dest 'source-map')
+.\\Export-PackageAssemblyMap.ps1 -ResultsFolder (Join-Path $dest 'fix-planner')
 
 # One zip to move or upload.
 Compress-Archive -Path (Join-Path $dest '*') -DestinationPath "$dest.zip" -Force
@@ -59,6 +60,7 @@ const LAYOUT_ROWS: [string, string][] = [
   ['      <App>.deps.json, <App>.runtimeconfig.json, AssemblyManifest_<App>_yyyyMMdd_HHmm.json', ''],
   ['  deployed\\<App>_<folder>\\', '-> Inputs: Runtime binding inputs (same three files)'],
   ['  source-map\\NuGetSourceMap_yyyyMMdd_HHmm.json', '-> Inputs: Package source metadata > Bundled map'],
+  ['  fix-planner\\PackageAssemblyMap_*.json, AssemblyReferences_*.csv', '-> Inputs: Runtime binding inputs (or paste the scan on Fix planner)'],
   ['  Collect-*_yyyyMMdd_HHmm.csv', '   copy logs: source path, destination, date'],
 ];
 const LAYOUT_WIDTH = Math.max(...LAYOUT_ROWS.filter(([, note]) => note).map(([path]) => path.length)) + 2;
@@ -116,6 +118,32 @@ export const COLLECT_SCRIPTS: CollectScript[] = [
     requires: 'PowerShell 7+',
     example: `${DEST}\n.\\Export-AssemblyManifest.ps1 -BinPath 'C:\\dev\\git\\<Repo>\\<Project>\\bin\\Debug\\net10.0' -ExtraPaths @() -IncludeFramework $true -DotnetRoot 'C:\\Program Files\\dotnet' -ResultsFolder (Join-Path $dest 'binding')`,
     source: { url: '/scripts/Export-AssemblyManifest.ps1' },
+  },
+  {
+    id: 'assembly-references',
+    file: 'Find-AssemblyReference.ps1',
+    title: 'Who references the assembly that failed (REFERENCER scan)',
+    purpose:
+      'The runtime reports only the first reference that fails. This lists every DLL in the failing folder that references the named assembly, with the exact version each was compiled against, plus the deployed copies, and prints the required minimum (the highest RefersTo).',
+    feeds: 'Fix planner: paste the printed table, or load the CSV under Inputs → Runtime binding inputs.',
+    searches: ['-Path (the bin or deployed folder that failed) and its subfolders'],
+    output: 'fix-planner\\AssemblyReferences_<Name>_yyyyMMdd_HHmm.csv (columns Kind, Assembly, AssemblyVersion, ReferencesVersion, Path)',
+    requires: 'PowerShell 7+',
+    example: `${DEST}\n.\\Find-AssemblyReference.ps1 -Path 'C:\\dev\\git\\<Repo>\\<Project>\\bin\\Debug\\net10.0' -Name 'Model.Import' -Recurse $true -ResultsFolder (Join-Path $dest 'fix-planner')`,
+    source: { url: '/scripts/Find-AssemblyReference.ps1' },
+  },
+  {
+    id: 'package-assembly-map',
+    file: 'Export-PackageAssemblyMap.ps1',
+    title: 'Package → assembly map (which package version ships which AssemblyVersion)',
+    purpose:
+      'Reads lib\\<tfm>\\*.dll of every cached version of each internal package (metadata only) and records its AssemblyVersion and FileVersion. The Fix planner uses it to find the lowest package version whose assembly is new enough to pin. The cache holds only what was restored locally; the script prints the dotnet package search command that lists every version on the feed.',
+    feeds: 'Fix planner → Option 1 (pin), via Inputs → Runtime binding inputs.',
+    searches: ['%USERPROFILE%\\.nuget\\packages, Ids matching ^(model|plugin|datalayer|feature|linql)\\.', 'lib\\net10.0\\ (else the highest other lib\\ folder)'],
+    output: 'fix-planner\\PackageAssemblyMap_yyyyMMdd_HHmm.json',
+    requires: 'PowerShell 7+',
+    example: `${DEST}\n.\\Export-PackageAssemblyMap.ps1 -PackagesPath "$env:USERPROFILE\\.nuget\\packages" -IdPattern '^(model|plugin|datalayer|feature|linql)\\.' -Tfm 'net10.0' -ResultsFolder (Join-Path $dest 'fix-planner')`,
+    source: { url: '/scripts/Export-PackageAssemblyMap.ps1' },
   },
   {
     id: 'source-map',

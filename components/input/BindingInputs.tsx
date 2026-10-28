@@ -15,7 +15,13 @@ export interface BindingItem {
 
 export const SCRIPT_URL = '/scripts/Export-AssemblyManifest.ps1';
 
-const KIND_LABEL: Record<BindingInputKind, string> = { deps: 'deps.json', manifest: 'assembly manifest', runtimeconfig: 'runtimeconfig.json' };
+const KIND_LABEL: Record<BindingInputKind, string> = {
+  deps: 'deps.json',
+  manifest: 'assembly manifest',
+  runtimeconfig: 'runtimeconfig.json',
+  referencer: 'REFERENCER scan',
+  packageMap: 'package → assembly map',
+};
 
 export function BindingInputs({ items, onItems, result, busy }: { items: BindingItem[]; onItems: (items: BindingItem[]) => void; result: BindingResult | null; busy: boolean }) {
   const [paste, setPaste] = useState('');
@@ -33,18 +39,19 @@ export function BindingInputs({ items, onItems, result, busy }: { items: Binding
           <a className={linkBtn} href={SCRIPT_URL} download>
             Export-AssemblyManifest.ps1
           </a>{' '}
-          enable the tab; <code className="font-mono">&lt;App&gt;.runtimeconfig.json</code> is optional. The file type is detected from its content.
+          enable the tab; <code className="font-mono">&lt;App&gt;.runtimeconfig.json</code> is optional. The Fix planner also reads REFERENCER scans (table or CSV from Find-AssemblyReference.ps1) and the package →
+          assembly map from Export-PackageAssemblyMap.ps1. The file type is detected from its content.
         </p>
       </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="space-y-2">
           <label htmlFor="binding-paste" className="text-sm font-medium">
-            Paste JSON
+            Paste JSON or a REFERENCER table
           </label>
           <textarea
             id="binding-paste"
             className={`${field} h-28 w-full font-mono text-xs`}
-            placeholder="Paste deps.json, the assembly manifest, or runtimeconfig.json…"
+            placeholder="Paste deps.json, the assembly manifest, runtimeconfig.json, the package map, or a REFERENCER scan…"
             value={paste}
             onChange={(e) => setPaste(e.target.value)}
             spellCheck={false}
@@ -58,10 +65,10 @@ export function BindingInputs({ items, onItems, result, busy }: { items: Binding
               setPaste('');
             }}
           >
-            Add pasted JSON
+            Add pasted input
           </button>
         </div>
-        <FileDropzone id="binding-upload" title="Upload binding files" onFiles={(files) => onItems([...items, ...files.map((file) => ({ id: newId('bind'), name: file.name, file }))])} />
+        <FileDropzone id="binding-upload" title="Upload binding files" extensions={['.json', '.csv', '.txt']} onFiles={(files) => onItems([...items, ...files.map((file) => ({ id: newId('bind'), name: file.name, file }))])} />
       </div>
 
       {items.length > 0 ? (
@@ -95,7 +102,7 @@ export function BindingInputs({ items, onItems, result, busy }: { items: Binding
             })}
           </ul>
           {result && result.missing.length > 0 ? (
-            <p className="mt-1 text-xs text-warn-ink">Binding check also needs: {result.missing.map((k) => KIND_LABEL[k]).join(' and ')}.</p>
+            <p className="mt-1 text-xs text-warn-ink">Binding check also needs: {result.missing.map((k) => KIND_LABEL[k]).join(' and ')}. The Fix planner works with a REFERENCER scan alone.</p>
           ) : null}
         </div>
       ) : null}

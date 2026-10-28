@@ -9,6 +9,7 @@ import { normalizeSource } from '@/lib/metadata';
 import type { AnalysisResult, BindingResult, ClassifySettings, IdKey, NugetLookup, Origin, SkewSettings } from '@/lib/types';
 import type { AnalyzeInputMessage } from '@/workers/protocol';
 import { CollectScripts } from './collect/CollectScripts';
+import { FixPlanner } from './fixplanner/FixPlanner';
 import { useNugetLookups } from './hooks/useNugetLookups';
 import { usePersistentState } from './hooks/usePersistentState';
 import { BindingInputs, type BindingItem } from './input/BindingInputs';
@@ -27,7 +28,10 @@ import { Banner } from './ui/Banner';
 import { card, field } from './ui/styles';
 import { Tabs } from './ui/Tabs';
 
-type TabId = 'inputs' | 'collect' | 'classification' | 'dependencies' | 'duplicates' | 'tree' | 'buildOrder' | 'skew' | 'binding' | 'export';
+type TabId = 'inputs' | 'collect' | 'classification' | 'dependencies' | 'duplicates' | 'tree' | 'buildOrder' | 'skew' | 'binding' | 'fix' | 'export';
+
+/** Tabs that work without analyzed project.assets.json files, so they skip the scope selector and the "Analyze first" banner. */
+const STANDALONE_TABS: ReadonlySet<TabId> = new Set(['inputs', 'collect', 'binding', 'fix']);
 
 interface Prefs {
   includeRidTargets: boolean;
@@ -83,6 +87,15 @@ export default function AssetsGraphApp() {
   const [bindingItems, setBindingItems] = useState<BindingItem[]>([]);
   const [binding, setBinding] = useState<BindingResult | null>(null);
   const [bindingBusy, setBindingBusy] = useState(false);
+
+  const [fixTarget, setFixTarget] = useState('');
+  const [fixErrorVersion, setFixErrorVersion] = useState<string | undefined>();
+  const [fixScanText, setFixScanText] = useState('');
+  const planFix = (assembly: string, version?: string) => {
+    setFixTarget(assembly);
+    setFixErrorVersion(version);
+    setTab('fix');
+  };
 
   const onLookupResults = useCallback((batch: Record<IdKey, NugetLookup>) => setLookups((prev) => ({ ...prev, ...batch })), []);
   const nuget = useNugetLookups(onLookupResults);
@@ -199,15 +212,16 @@ export default function AssetsGraphApp() {
           { id: 'buildOrder', label: 'Build order', disabled: !hasResults },
           { id: 'skew', label: 'Version skew', count: skew?.internal.length, disabled: !hasResults },
           { id: 'binding', label: 'Binding check', count: bindingReady ? binding.counts.error : undefined, disabled: !bindingReady },
+          { id: 'fix', label: 'Fix planner' },
           { id: 'export', label: 'Export', disabled: !hasResults },
         ]}
       />
 
-      {hasResults && tab !== 'inputs' && tab !== 'collect' && classification?.proxyWarning && tab !== 'classification' ? (
+      {hasResults && !STANDALONE_TABS.has(tab) && classification?.proxyWarning && tab !== 'classification' ? (
         <ProxyBanner warning={classification.proxyWarning} trust={settings.trustProxyFeedMetadata} onTrust={(v) => setSettings({ ...settings, trustProxyFeedMetadata: v })} />
       ) : null}
 
-      {hasResults && tab !== 'inputs' && tab !== 'collect' && tab !== 'classification' && tab !== 'binding' && analysis ? (
+      {hasResults && !STANDALONE_TABS.has(tab) && tab !== 'classification' && analysis ? (
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <label htmlFor="scope" className="text-ink-2">
             Scope
@@ -345,6 +359,23 @@ export default function AssetsGraphApp() {
             setSkewFocus({ key: packageId.toLowerCase(), nonce: Date.now() });
             setTab('skew');
           }}
+          onPlanFix={planFix}
+        />
+      ) : null}
+
+      {tab === 'fix' ? (
+        <FixPlanner
+          binding={binding}
+          analysis={analysis}
+          classification={classification}
+          target={fixTarget}
+          onTarget={(t) => {
+            setFixTarget(t);
+            setFixErrorVersion(undefined);
+          }}
+          errorVersion={fixErrorVersion}
+          scanText={fixScanText}
+          onScanText={setFixScanText}
         />
       ) : null}
 
@@ -363,7 +394,7 @@ export default function AssetsGraphApp() {
         />
       ) : null}
 
-      {tab !== 'inputs' && tab !== 'collect' && tab !== 'binding' && !hasResults ? <Banner tone="info" title="Analyze at least one file first." /> : null}
+      {!STANDALONE_TABS.has(tab) && !hasResults ? <Banner tone="info" title="Analyze at least one file first." /> : null}
       {tab === 'binding' && !bindingReady ? <Banner tone="info" title="Load a deps.json and an assembly manifest under Inputs → Runtime binding inputs." /> : null}
 
       <footer className="pt-4 text-xs text-muted">Assets Graph · static site, no server code, no analytics.</footer>

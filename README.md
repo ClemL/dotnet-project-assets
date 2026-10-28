@@ -35,6 +35,7 @@ Node 20.9 or later.
 | Build order | Internal nodes only, public chains collapsed, Kahn waves, cycle paths when no order exists, and a DAG colored by wave. |
 | Version skew | Stale internal builds: per-package skew (requested vs resolved build, spread, oldest requester, severity), consumer ranking with the outlier, a wave-ordered rebuild plan (with cascade), and floating/unpinned direct references with lock-file and Central Package Management status. Settings (build-number regex, thresholds, rebuild minimum, cascade, public packages) are saved in the browser. |
 | Binding check | Enabled once `<App>.deps.json` and an assembly manifest are loaded (Inputs → Runtime binding inputs). Paste a FileNotFoundException / FileLoadException to find every requester of that exact assembly version, what is deployed instead, and the NuGet packages on both sides. Also lists every reference by classification, assemblies with multiple copies, and package version ↔ AssemblyVersion correlation. |
+| Fix planner | Turns an assembly-load failure into a fix. Open it from **Plan fix** on a MISSING/TOO_OLD row or in the error lookup of the Binding check, or paste a REFERENCER scan from `Find-AssemblyReference.ps1`; it needs nothing else loaded. Shows every requester and the required minimum (the runtime reports only the first failure), flags per-build AssemblyVersion stamping, recommends the lowest package version to pin (with the package → assembly map from `Export-PackageAssemblyMap.ps1`), and lists the rebuild cascade in build-order waves. A to-do list per assembly is saved in the browser. |
 | Export | Markdown, JSON, and CSV (`-Dependencies`, `-BuildOrder`, `-VersionSkew`) named `AssetsGraph_<ProjectNameOrMerged>_yyyyMMdd_HHmm.<ext>`. |
 
 The **Scope** selector switches every results tab between the merged graph and a single file.
@@ -55,7 +56,15 @@ First match wins:
 3. `type: project` → **Project**.
 4. System prefix (`System.`, `Microsoft.`, `runtime.`, `NETStandard.`, `Microsoft.NETCore.` by default) → **System**.
 5. Internal prefix → **Private**.
-6. nuget.org flat container (8 concurrent requests, 7-day `localStorage` cache):
+6. Repository signature in the restored package (`.signature.p7s` listed in `libraries[*].files`):
+   - Present → **Public**. nuget.org repository-signs every package it serves.
+   - Absent → **Private (inferred)**, reason "unsigned → internal". Azure Artifacts does not add a
+     repository signature to packages pushed to it; packages saved from an upstream nuget.org source keep
+     theirs.
+   - An internal package that is author-signed also contains `.signature.p7s` and lands on **Public**;
+     add an internal prefix or an override for it.
+   - Projects have no file list, so the rule does not apply to them.
+7. nuget.org flat container (8 concurrent requests, 7-day `localStorage` cache):
    - Version listed → **Public**.
    - 404, or the Id exists but that version is not listed → **Private (inferred)**.
    - Offline mode, or a failed lookup → **Unclassified**.
@@ -109,14 +118,15 @@ Plan availability changes; check <https://vercel.com/docs/deployment-protection>
 
 ```
 lib/        pure analysis code, no React or DOM: parse, graph, duplicates, classify, metadata, export, versions, framework, paths,
-            skew + floating (Version skew), binding + bindingInputs (Binding check)
+            skew + floating (Version skew), binding + bindingInputs (Binding check), fixplanner + assemblyVersion (Fix planner)
 workers/    analyze.worker.ts (wraps lib) and the message protocol
 client/     browser side effects with injectable dependencies: nuget.org lookups, localStorage, file and folder picking, downloads
 components/ React UI
 tests/      Vitest suites and hand-written fixtures
 scripts/    Export-NuGetSourceMap.ps1
-public/scripts/  Export-AssemblyManifest.ps1, Collect-ProjectAssets.ps1, Collect-BuildOutputs.ps1, Collect-DeployedApps.ps1
-                 (shown on the Collect scripts tab; the Collect-* scripts run in Windows PowerShell 5.1 and 7)
+public/scripts/  Export-AssemblyManifest.ps1, Collect-ProjectAssets.ps1, Collect-BuildOutputs.ps1, Collect-DeployedApps.ps1,
+                 Find-AssemblyReference.ps1, Export-PackageAssemblyMap.ps1
+                 (shown on the Collect scripts tab; the Collect-* scripts run in Windows PowerShell 5.1 and 7, the others need 7+)
 ```
 
 ## Binding check rules
@@ -138,6 +148,37 @@ Verified on .NET 10.0.13 (default load context) by swapping DLLs under a test ap
    entry has none. RID-specific assets (`runtimes/win/lib/...`) are under `runtimeTargets`.
 
 Plugin folders (manifest roots after the first) resolve from their own folder first, then the app folder.
+
+## Fix planner rules
+
+Inputs, all optional except a source of requesters:
+
+1. `Find-AssemblyReference.ps1 -Path '<bin folder>' -Name 'Model.Import'` (PowerShell 7+): REFERENCER rows
+   (every DLL that references the assembly, with the version it was compiled against) and DEPLOYED rows.
+   Paste the printed table on the tab, or load the CSV under Inputs → Runtime binding inputs. Without a scan,
+   requesters come from the Binding check (deps.json + manifest) or the manifest alone.
+2. `Export-PackageAssemblyMap.ps1` (PowerShell 7+): package version → AssemblyVersion for every cached version
+   of each internal package, read from `lib\<tfm>\*.dll`. Package versions and AssemblyVersions come from
+   different counters, so this map is the only way to choose a package to pin. The cache holds only versions
+   restored on that machine; the script prints the `dotnet package search` command for the feed.
+3. project.assets.json files place packages in the rebuild cascade.
+
+Rules:
+
+- Required minimum = the highest version any requester was compiled against. A requester fails when the
+  deployed version is lower. The deployed copy is the shallowest DEPLOYED path (plugin subfolders hold their
+  own copies), then the lowest version.
+- Stamping: an internal assembly is flagged when it is referenced at two or more versions, or has a non-zero
+  revision. The revision is 16 bits: AssemblyVersion revisions above 65534 fail with CS7034; FileVersion above
+  65535 only warns (CS7035).
+- Pin: the lowest package version whose AssemblyVersion is ≥ the required minimum **and** that meets the
+  highest package-level minimum other packages declare for it (a lower pin is a NU1605 downgrade error).
+  Requesters compiled against an older version roll forward; smoke-test them.
+- Cascade: everything downstream of the target on the internal graph, root projects excluded. Wave numbers are
+  the full build order's, numbered from 1 as on the Build order tab. Assemblies found only in DLL references
+  (manifest or scan) are placed after what they reference and marked "placed from DLL references
+  (unverified)". A cycle among the affected packages is shown instead of an order.
+- Pipeline export to `TriggerAzureDevOpsPipelines.ps1` is not built yet; it waits for the script template.
 
 ## Version skew rules
 

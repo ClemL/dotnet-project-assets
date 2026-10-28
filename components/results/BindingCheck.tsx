@@ -8,7 +8,7 @@ import { SCRIPT_URL } from '../input/BindingInputs';
 import { Banner } from '../ui/Banner';
 import { CodeBlock } from '../ui/CodeBlock';
 import { DataTable, type Column } from '../ui/DataTable';
-import { card, cx, field, h2, hint, linkBtn, td, th } from '../ui/styles';
+import { btnSmall, card, cx, field, h2, hint, linkBtn, td, th } from '../ui/styles';
 
 const SEVERITY_RANK: Record<BindingSeverity, number> = { error: 0, warning: 1, info: 2, ok: 3 };
 const SEVERITY_STYLE: Record<BindingSeverity, string> = {
@@ -33,6 +33,18 @@ interface Ctx {
   canJump: boolean;
   onJump: (packageId: string) => void;
   onJumpSkew?: (packageId: string) => void;
+  onPlanFix?: (assembly: string, version?: string) => void;
+}
+
+const FIXABLE = new Set(['MISSING', 'TOO_OLD']);
+
+function PlanFixButton({ ctx, assembly, version }: { ctx: Ctx; assembly: string; version?: string }) {
+  if (!ctx.onPlanFix) return null;
+  return (
+    <button type="button" className={cx(btnSmall, 'font-sans')} title={`Open the Fix planner for ${assembly}`} onClick={() => ctx.onPlanFix?.(assembly, version)}>
+      Plan fix
+    </button>
+  );
 }
 
 function PackageCell({ link, ctx, outside }: { link: PackageLink | undefined; ctx: Ctx; outside: string }) {
@@ -99,6 +111,11 @@ function issueColumns(ctx: Ctx): Column<BindingIssue>[] {
       render: (i) => (
         <span className="font-mono text-xs">
           {i.reference.name} <span className="text-ink-2">{i.reference.version}</span>
+          {FIXABLE.has(i.classification) && !i.isFramework ? (
+            <span className="mt-0.5 block">
+              <PlanFixButton ctx={ctx} assembly={i.reference.name} version={i.reference.version} />
+            </span>
+          ) : null}
         </span>
       ),
       sortValue: (i) => i.reference.name.toLowerCase(),
@@ -207,7 +224,13 @@ function ErrorLookup({ ctx }: { ctx: Ctx }) {
               </div>
             ))}
           </dl>
-          <Banner tone={failing ? 'danger' : lookup.requesters.length === 0 ? 'warn' : 'info'} title={lookup.verdict} />
+          <Banner tone={failing ? 'danger' : lookup.requesters.length === 0 ? 'warn' : 'info'} title={lookup.verdict}>
+            {ctx.onPlanFix ? (
+              <p>
+                <PlanFixButton ctx={ctx} assembly={current.name} version={current.version} /> lists every requester of {current.name}, the minimum version that satisfies all of them, and the pin or rebuild that gets there.
+              </p>
+            ) : null}
+          </Banner>
           <div className="text-sm">
             <p className="font-medium">Deployed {current.name}</p>
             <ul className="list-disc pl-5 text-xs">
@@ -286,6 +309,7 @@ export function BindingCheck({
   canJump,
   onJump,
   onJumpSkew,
+  onPlanFix,
 }: {
   result: BindingResult;
   classification: ClassifyOutput | undefined;
@@ -294,6 +318,8 @@ export function BindingCheck({
   canJump: boolean;
   onJump: (packageId: string) => void;
   onJumpSkew?: (packageId: string) => void;
+  /** Opens the Fix planner for an assembly that fails to load (version: the one the exception names). */
+  onPlanFix?: (assembly: string, version?: string) => void;
 }) {
   const [severity, setSeverity] = useState<SeverityFilter>('problems');
   const [internalOnly, setInternalOnly] = useState(true);
@@ -301,7 +327,7 @@ export function BindingCheck({
   const [query, setQuery] = useState('');
   const [nonMonotonicOnly, setNonMonotonicOnly] = useState(false);
 
-  const ctx: Ctx = { result, canJump, onJump, onJumpSkew };
+  const ctx: Ctx = { result, canJump, onJump, onJumpSkew, onPlanFix };
   const originOf = useMemo(() => bindingOriginResolver(classification, settings), [classification, settings]);
 
   // Internal/framework filters apply to the cards and the table; severity and text only to the table.

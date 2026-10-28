@@ -86,6 +86,9 @@ export function ClassificationPanel({
           </li>
           <li>System prefix → System</li>
           <li>Internal prefix → Private</li>
+          <li>
+            Package signature: a <code className="font-mono">.signature.p7s</code> in the assets file&apos;s file list → Public (nuget.org repository-signs every package); none → Private (inferred), since internal feeds serve unsigned packages. An author-signed internal package also has the file; give it an internal prefix or an override
+          </li>
           <li>nuget.org lookup: version listed → Public; 404 or version not listed → Private (inferred). Offline → Unclassified</li>
         </ol>
         {counts.size > 0 ? (

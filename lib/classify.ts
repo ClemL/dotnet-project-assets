@@ -7,7 +7,10 @@
 //   1. type: project            → Project
 //   2. system prefix            → System
 //   3. internal prefix          → Private
-//   4. nuget.org flat container → Public / Private (inferred); offline → Unclassified
+//   4. package signature        → .signature.p7s in libraries[*].files: Public (nuget.org repository-signs
+//                                 every package); none: Private (inferred), since internal feeds serve
+//                                 unsigned packages. Skipped when the assets file has no files list.
+//   5. nuget.org flat container → Public / Private (inferred); offline → Unclassified
 
 import { classifySource, isNugetOrg, isRemoteSource, metadataKey, normalizeSource } from './metadata';
 import type {
@@ -118,6 +121,8 @@ function classifyOne(pkg: PackageRef, ctx: Context): Outcome {
   if (sys) return done('System', 'system-prefix', `system prefix: ${sys}`);
   const internal = matchPrefix(pkg.id, settings.internalPrefixes);
   if (internal) return done('Private', 'internal-prefix', `internal prefix: ${internal}`);
+  if (pkg.signed === true) return done('Public', 'signature-signed', 'repository-signed (.signature.p7s) → public');
+  if (pkg.signed === false) return done('PrivateInferred', 'signature-unsigned', 'unsigned → internal');
   if (settings.offline) return done('Unclassified', 'offline', 'offline mode: no prefix rule matched', true);
 
   const lookup = ctx.lookups[pkg.key];

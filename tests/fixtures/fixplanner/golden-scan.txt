@@ -1,0 +1,15 @@
+
+Kind       Dll                               Version      RefersTo
+----       ---                               -------      --------
+REFERENCER Plugin.Azure.StorageAccount.dll   10.0.0.0     10.0.0.40512
+REFERENCER Plugin.DataLoader.dll             10.0.0.0     10.0.0.34377
+REFERENCER Plugin.Excel.dll                  10.0.0.0     10.0.0.34377
+
+REFERENCER Model.CQE.Landing.WellPartner.dll 10.0.0.0     10.0.0.34174
+REFERENCER Model.CQE.Landing.Sentry.dll      10.0.0.0     10.0.0.29865
+REFERENCER Model.CQE.Landing.Org.dll         10.0.0.0     10.0.0.24591
+REFERENCER Model.CQE.dll                     10.0.0.0     10.0.0.19269
+REFERENCER Model.CQE.Landing.BILH.dll        10.0.0.0     10.0.0.19269
+DEPLOYED   Model.Import.dll                  10.0.0.19269
+
+

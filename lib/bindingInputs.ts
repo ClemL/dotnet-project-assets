@@ -1,6 +1,7 @@
 // Binding-check inputs: <App>.deps.json, the assembly manifest from Export-AssemblyManifest.ps1, and
 // <App>.runtimeconfig.json. Parsers never throw; problems become errors or warnings.
 
+import { parseAssemblyVersion } from './assemblyVersion';
 import type {
   AssemblyManifest,
   AssemblyOwner,
@@ -12,6 +13,9 @@ import type {
   FrameworkAssembly,
   FrameworkFolder,
   ManifestAssembly,
+  PackageAssemblyEntry,
+  ReferencerRow,
+  ReferencerScan,
   RuntimeConfigInfo,
 } from './types';
 
@@ -40,6 +44,8 @@ export type BindingParseResult =
   | { ok: true; kind: 'deps'; deps: DepsModel }
   | { ok: true; kind: 'manifest'; manifest: AssemblyManifest }
   | { ok: true; kind: 'runtimeconfig'; runtimeConfig: RuntimeConfigInfo }
+  | { ok: true; kind: 'referencer'; scan: ReferencerScan }
+  | { ok: true; kind: 'packageMap'; packageMap: PackageAssemblyEntry[] }
   | { ok: false; error: string };
 
 /** Identifies a parsed JSON document as deps.json, an assembly manifest, or runtimeconfig.json. */
@@ -59,8 +65,13 @@ export function parseBindingInput(input: BindingInputText): BindingParseResult {
   try {
     json = JSON.parse(text);
   } catch (e) {
-    return { ok: false, error: `Invalid JSON: ${e instanceof Error ? e.message : String(e)}` };
+    // Not JSON: a REFERENCER scan pasted from Format-Table, or its CSV.
+    const scan = parseReferencerScan(text, input.fileName);
+    if (scan) return { ok: true, kind: 'referencer', scan };
+    return { ok: false, error: `Not JSON and not a REFERENCER scan: ${e instanceof Error ? e.message : String(e)}` };
   }
+  const packageMap = parsePackageAssemblyMap(json);
+  if (packageMap) return { ok: true, kind: 'packageMap', packageMap };
   const kind = detectBindingInput(json);
   switch (kind) {
     case 'deps': {
@@ -76,6 +87,138 @@ export function parseBindingInput(input: BindingInputText): BindingParseResult {
     default:
       return { ok: false, error: 'Not a deps.json, assembly manifest, or runtimeconfig.json file.' };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Fix Planner inputs: REFERENCER scans and the package → assembly map
+// ---------------------------------------------------------------------------
+
+const assemblyOf = (dll: string) => dll.replace(/^.*[\\/]/, '').replace(/\.(dll|exe)$/i, '');
+
+function splitCsvLine(line: string): string[] {
+  const out: string[] = [];
+  let cur = '';
+  let quoted = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i] as string;
+    if (quoted) {
+      if (c === '"' && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else if (c === '"') quoted = false;
+      else cur += c;
+    } else if (c === '"') quoted = true;
+    else if (c === ',') {
+      out.push(cur);
+      cur = '';
+    } else cur += c;
+  }
+  out.push(cur);
+  return out.map((s) => s.trim());
+}
+
+const CSV_ALIASES: Record<string, 'kind' | 'dll' | 'version' | 'refersTo' | 'path'> = {
+  kind: 'kind',
+  assembly: 'dll',
+  dll: 'dll',
+  name: 'dll',
+  assemblyversion: 'version',
+  version: 'version',
+  referencesversion: 'refersTo',
+  refersto: 'refersTo',
+  referencedversion: 'refersTo',
+  path: 'path',
+};
+
+function toRow(kind: string, dll: string, version: string, refersTo: string | undefined, path: string | undefined, warnings: string[], lineNo: number): ReferencerRow | null {
+  const k = kind.toUpperCase();
+  if (k !== 'REFERENCER' && k !== 'DEPLOYED') {
+    warnings.push(`Line ${lineNo}: unknown kind "${kind}"; skipped.`);
+    return null;
+  }
+  for (const v of [dll, version, refersTo ?? '']) {
+    if (/(…|\.\.\.)$/.test(v)) warnings.push(`Line ${lineNo}: "${v}" looks truncated by Format-Table; use Format-Table -AutoSize or the CSV export.`);
+  }
+  if (!parseAssemblyVersion(version)) warnings.push(`Line ${lineNo}: "${version}" is not an assembly version.`);
+  if (k === 'REFERENCER' && !parseAssemblyVersion(refersTo)) {
+    warnings.push(`Line ${lineNo}: REFERENCER row without a valid RefersTo version; skipped.`);
+    return null;
+  }
+  return { kind: k, dll, assembly: assemblyOf(dll), version, refersTo: k === 'REFERENCER' ? refersTo : undefined, path: path || undefined };
+}
+
+/**
+ * Parses a REFERENCER scan: the PowerShell Format-Table output (Kind, Dll, Version, RefersTo; split on
+ * whitespace, blank lines and the ---- row ignored) or the CSV from Find-AssemblyReference.ps1 (Kind,
+ * Assembly, AssemblyVersion, ReferencesVersion, Path). Returns null when the text is neither.
+ */
+export function parseReferencerScan(text: string, fileName = 'Pasted scan'): ReferencerScan | null {
+  const lines = text.replace(/^﻿/, '').split(/\r?\n/);
+  const headerIndex = lines.findIndex((l) => /^\s*"?kind"?\s*[,\s]/i.test(l));
+  if (headerIndex < 0) return null;
+  const header = lines[headerIndex] as string;
+  const warnings: string[] = [];
+  const rows: ReferencerRow[] = [];
+  let source: ReferencerScan['source'];
+
+  if (header.includes(',')) {
+    source = 'csv';
+    const cols = splitCsvLine(header).map((h) => CSV_ALIASES[h.replace(/\s+/g, '').toLowerCase()]);
+    if (!cols.includes('kind') || !cols.includes('dll') || !cols.includes('version')) return null;
+    for (let i = headerIndex + 1; i < lines.length; i++) {
+      const line = lines[i] as string;
+      if (line.trim() === '') continue;
+      const cells = splitCsvLine(line);
+      const get = (c: string) => {
+        const idx = cols.indexOf(c as never);
+        return idx >= 0 ? (cells[idx] ?? '') : '';
+      };
+      const row = toRow(get('kind'), get('dll'), get('version'), get('refersTo') || undefined, get('path'), warnings, i + 1);
+      if (row) rows.push(row);
+    }
+  } else {
+    source = 'table';
+    for (let i = headerIndex + 1; i < lines.length; i++) {
+      const line = (lines[i] as string).trim();
+      if (line === '' || /^[-\s]+$/.test(line)) continue;
+      const t = line.split(/\s+/);
+      // Text around the table (a script's summary lines) is skipped; only row-like lines are reported.
+      if (!/^(REFERENCER|DEPLOYED)$/i.test(t[0] as string)) {
+        if (t.length >= 3 && parseAssemblyVersion(t[2])) warnings.push(`Line ${i + 1}: unknown kind "${t[0]}"; skipped.`);
+        continue;
+      }
+      if (t.length < 3) {
+        warnings.push(`Line ${i + 1}: expected Kind, Dll, Version[, RefersTo]; skipped.`);
+        continue;
+      }
+      const row = toRow(t[0] as string, t[1] as string, t[2] as string, t[3], undefined, warnings, i + 1);
+      if (row) rows.push(row);
+    }
+  }
+  if (rows.length === 0) return null;
+  const targets = [...new Set(rows.filter((r) => r.kind === 'DEPLOYED').map((r) => r.assembly))];
+  if (targets.length > 1) warnings.push(`DEPLOYED rows name several assemblies (${targets.join(', ')}); using ${targets[0]}.`);
+  return { source, fileName, target: targets[0], rows, warnings };
+}
+
+/** Parses the JSON array written by Export-PackageAssemblyMap.ps1. Returns null for any other JSON. */
+export function parsePackageAssemblyMap(json: unknown): PackageAssemblyEntry[] | null {
+  if (!Array.isArray(json) || json.length === 0) return null;
+  const out: PackageAssemblyEntry[] = [];
+  for (const item of json) {
+    if (typeof item !== 'object' || item === null) return null;
+    const o = item as Record<string, unknown>;
+    if (typeof o.id !== 'string' || typeof o.packageVersion !== 'string' || typeof o.assemblyVersion !== 'string') return null;
+    out.push({
+      id: o.id,
+      packageVersion: o.packageVersion,
+      dll: typeof o.dll === 'string' ? o.dll : `${o.id}.dll`,
+      assemblyVersion: o.assemblyVersion,
+      fileVersion: typeof o.fileVersion === 'string' ? o.fileVersion : null,
+      tfm: typeof o.tfm === 'string' ? o.tfm : '',
+    });
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------------------

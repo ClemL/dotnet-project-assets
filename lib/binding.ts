@@ -14,6 +14,7 @@
 // Package versions (10.0.0-13615) and assembly versions (10.0.0.34377) come from different counters
 // and are never compared with each other: assembly versions use their own AssemblyVersion type.
 
+import { compareAssemblyVersions, parseAssemblyVersion, type AssemblyVersion } from './assemblyVersion';
 import { mergeManifests, parseBindingInput, ridRank, type BindingInputText } from './bindingInputs';
 import { isInternalOrigin, matchPrefix } from './classify';
 import type {
@@ -39,39 +40,15 @@ import type {
   IdKey,
   ManifestAssembly,
   Origin,
+  PackageAssemblyEntry,
   PackageLink,
   ParsedLoadError,
+  ReferencerScan,
   RuntimeConfigInfo,
 } from './types';
 import { compareVersionStrings } from './versions';
 
-// ---------------------------------------------------------------------------
-// Assembly versions
-// ---------------------------------------------------------------------------
-
-/** A four-part AssemblyVersion. Deliberately a different shape from NuGetVersion. */
-export interface AssemblyVersion {
-  readonly kind: 'assembly';
-  readonly parts: readonly [number, number, number, number];
-}
-
-export function parseAssemblyVersion(text: string | null | undefined): AssemblyVersion | null {
-  if (!text) return null;
-  const m = /^\s*(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?\s*$/.exec(text);
-  if (!m) return null;
-  const parts = [m[1], m[2], m[3] ?? '0', m[4] ?? '0'].map(Number) as [number, number, number, number];
-  // Each part is a 16-bit value in metadata.
-  if (parts.some((p) => p > 65535)) return null;
-  return { kind: 'assembly', parts };
-}
-
-export function compareAssemblyVersions(a: AssemblyVersion, b: AssemblyVersion): number {
-  for (let i = 0; i < 4; i++) {
-    const d = (a.parts[i] as number) - (b.parts[i] as number);
-    if (d !== 0) return d < 0 ? -1 : 1;
-  }
-  return 0;
-}
+export { compareAssemblyVersions, parseAssemblyVersion, type AssemblyVersion } from './assemblyVersion';
 
 function sameAssemblyVersion(a: string, b: string): boolean {
   const x = parseAssemblyVersion(a);
@@ -306,6 +283,8 @@ export interface BindingAnalysisInput {
   deps: DepsModel[];
   manifests: AssemblyManifest[];
   runtimeConfigs: RuntimeConfigInfo[];
+  scans?: ReferencerScan[];
+  packageMap?: PackageAssemblyEntry[];
 }
 
 function choosePrimary(deps: DepsModel[], appName: string | undefined): DepsModel[] {
@@ -350,7 +329,7 @@ export function analyzeBinding(input: BindingAnalysisInput): BindingResult {
   if (deps.length === 0) missing.push('deps');
   if (!manifest) missing.push('manifest');
   const counts: Record<BindingSeverity, number> = { error: 0, warning: 0, info: 0, ok: 0 };
-  const base = { inputs: input.inputs, deps, manifest, runtimeConfig, missing, counts, warnings };
+  const base = { inputs: input.inputs, deps, manifest, runtimeConfig, missing, counts, warnings, scans: input.scans ?? [], packageMap: input.packageMap ?? [] };
   if (!manifest) return { ...base, issues: [], copies: [] };
 
   const idx = buildIndex(manifest, deps, runtimeConfig);
@@ -398,7 +377,7 @@ export function analyzeBinding(input: BindingAnalysisInput): BindingResult {
 
 /** Parses every input (kind detected per file) and analyzes them together. */
 export function analyzeBindingInputs(texts: BindingInputText[]): BindingResult {
-  const input: BindingAnalysisInput = { inputs: [], deps: [], manifests: [], runtimeConfigs: [] };
+  const input: BindingAnalysisInput = { inputs: [], deps: [], manifests: [], runtimeConfigs: [], scans: [], packageMap: [] };
   for (const t of texts) {
     const r = parseBindingInput(t);
     if (!r.ok) {
@@ -408,7 +387,9 @@ export function analyzeBindingInputs(texts: BindingInputText[]): BindingResult {
     input.inputs.push({ inputId: t.inputId, fileName: t.fileName, kind: r.kind });
     if (r.kind === 'deps') input.deps.push(r.deps);
     else if (r.kind === 'manifest') input.manifests.push(r.manifest);
-    else input.runtimeConfigs.push(r.runtimeConfig);
+    else if (r.kind === 'runtimeconfig') input.runtimeConfigs.push(r.runtimeConfig);
+    else if (r.kind === 'referencer') input.scans?.push(r.scan);
+    else input.packageMap?.push(...r.packageMap);
   }
   return analyzeBinding(input);
 }

@@ -1,0 +1,10 @@
+[
+  { "id": "Model.Import", "packageVersion": "10.0.0-13615", "dll": "Model.Import.dll", "assemblyVersion": "10.0.0.19269", "fileVersion": "10.0.0.19269", "tfm": "net10.0" },
+  { "id": "Model.Import", "packageVersion": "10.0.0-13700", "dll": "Model.Import.dll", "assemblyVersion": "10.0.0.38000", "fileVersion": "10.0.0.38000", "tfm": "net10.0" },
+  { "id": "Model.Import", "packageVersion": "10.0.0-13760", "dll": "Model.Import.dll", "assemblyVersion": "10.0.0.40600", "fileVersion": "10.0.0.40600", "tfm": "net10.0" },
+  { "id": "Model.Import", "packageVersion": "10.0.0-13790", "dll": "Model.Import.dll", "assemblyVersion": "10.0.0.40512", "fileVersion": "10.0.0.40512", "tfm": "net10.0" },
+  { "id": "Model.Import", "packageVersion": "10.0.0-13820", "dll": "Model.Import.dll", "assemblyVersion": "10.0.0.40100", "fileVersion": "10.0.0.40100", "tfm": "net10.0" },
+  { "id": "Model.Import", "packageVersion": "10.0.0-13850", "dll": "Model.Import.dll", "assemblyVersion": "10.0.0.41020", "fileVersion": "10.0.0.41020", "tfm": "net10.0" },
+  { "id": "Model.Import", "packageVersion": "10.0.0-13850", "dll": "Model.Import.dll", "assemblyVersion": "10.0.0.41020", "fileVersion": "10.0.0.41020", "tfm": "netstandard2.0" },
+  { "id": "Model.CQE", "packageVersion": "10.0.0-13404", "dll": "Model.CQE.dll", "assemblyVersion": "10.0.0.0", "fileVersion": "10.0.0.33100", "tfm": "net10.0" }
+]

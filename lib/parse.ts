@@ -105,8 +105,13 @@ export function parseAssetsJson(input: ParseInput): ParseResult {
   const warnings: string[] = [];
 
   const libraries = new Map<string, LibraryInfo>();
+  const librarySigned: Record<string, boolean> = {};
   for (const [key, value] of Object.entries(librariesJson)) {
     if (!isObject(value)) continue;
+    const split = splitLibraryKey(key);
+    if (split && value.type !== 'project' && Array.isArray(value.files)) {
+      librarySigned[`${split.id.toLowerCase()}/${normalizeVersion(split.version).toLowerCase()}`] = value.files.some((f) => typeof f === 'string' && f.toLowerCase().endsWith('.signature.p7s'));
+    }
     libraries.set(key.toLowerCase(), {
       type: typeof value.type === 'string' ? value.type : 'package',
       msbuildProject: typeof value.msbuildProject === 'string' ? value.msbuildProject : undefined,
@@ -282,6 +287,7 @@ export function parseAssetsJson(input: ParseInput): ParseResult {
     projectVersion,
     sources,
     restoreFlags: readRestoreFlags(restore, [...declaredByTfm.values()].flat(), frameworksJson),
+    librarySigned,
     targets,
     warnings,
   };

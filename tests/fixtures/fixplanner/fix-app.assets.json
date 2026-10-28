@@ -1,0 +1,215 @@
+{
+  "version": 3,
+  "targets": {
+    "net10.0": {
+      "Feature.Helper/10.0.0-9375": {
+        "type": "package",
+        "dependencies": {}
+      },
+      "Model.Import/10.0.0-13615": {
+        "type": "package",
+        "dependencies": {
+          "Feature.Helper": "10.0.0-9375"
+        }
+      },
+      "Model.CQE/10.0.0-13404": {
+        "type": "package",
+        "dependencies": {
+          "Model.Import": "10.0.0-13388"
+        }
+      },
+      "Plugin.DataLoader/10.0.0-13405": {
+        "type": "package",
+        "dependencies": {
+          "Model.Import": "10.0.0-13388"
+        }
+      },
+      "Plugin.Excel/10.0.0-13406": {
+        "type": "package",
+        "dependencies": {
+          "Model.Import": "10.0.0-13388"
+        }
+      },
+      "Model.CQE.Report/10.0.0-13314": {
+        "type": "package",
+        "dependencies": {
+          "Model.CQE": "10.0.0-13094"
+        }
+      },
+      "Plugin.Azure.StorageAccount/10.0.0-13479": {
+        "type": "package",
+        "dependencies": {
+          "Plugin.DataLoader": "10.0.0-13405",
+          "Model.Import": "10.0.0-13463"
+        }
+      },
+      "Model.PBM/10.0.0-13096": {
+        "type": "package",
+        "dependencies": {
+          "Model.CQE.Report": "10.0.0-13314",
+          "Plugin.Azure.StorageAccount": "10.0.0-13479"
+        }
+      },
+      "Model.Ref/10.0.0-13570": {
+        "type": "package",
+        "dependencies": {
+          "Feature.Helper": "10.0.0-9375"
+        }
+      },
+      "Newtonsoft.Json/13.0.3": {
+        "type": "package",
+        "dependencies": {}
+      }
+    }
+  },
+  "libraries": {
+    "Feature.Helper/10.0.0-9375": {
+      "sha512": "x",
+      "type": "package",
+      "path": "feature.helper/10.0.0-9375",
+      "files": [
+        "feature.helper.10.0.0-9375.nupkg.sha512",
+        "feature.helper.nuspec",
+        "lib/net10.0/Feature.Helper.dll"
+      ]
+    },
+    "Model.Import/10.0.0-13615": {
+      "sha512": "x",
+      "type": "package",
+      "path": "model.import/10.0.0-13615",
+      "files": [
+        "model.import.10.0.0-13615.nupkg.sha512",
+        "model.import.nuspec",
+        "lib/net10.0/Model.Import.dll"
+      ]
+    },
+    "Model.CQE/10.0.0-13404": {
+      "sha512": "x",
+      "type": "package",
+      "path": "model.cqe/10.0.0-13404",
+      "files": [
+        "model.cqe.10.0.0-13404.nupkg.sha512",
+        "model.cqe.nuspec",
+        "lib/net10.0/Model.CQE.dll"
+      ]
+    },
+    "Plugin.DataLoader/10.0.0-13405": {
+      "sha512": "x",
+      "type": "package",
+      "path": "plugin.dataloader/10.0.0-13405",
+      "files": [
+        "plugin.dataloader.10.0.0-13405.nupkg.sha512",
+        "plugin.dataloader.nuspec",
+        "lib/net10.0/Plugin.DataLoader.dll"
+      ]
+    },
+    "Plugin.Excel/10.0.0-13406": {
+      "sha512": "x",
+      "type": "package",
+      "path": "plugin.excel/10.0.0-13406",
+      "files": [
+        "plugin.excel.10.0.0-13406.nupkg.sha512",
+        "plugin.excel.nuspec",
+        "lib/net10.0/Plugin.Excel.dll"
+      ]
+    },
+    "Model.CQE.Report/10.0.0-13314": {
+      "sha512": "x",
+      "type": "package",
+      "path": "model.cqe.report/10.0.0-13314",
+      "files": [
+        "model.cqe.report.10.0.0-13314.nupkg.sha512",
+        "model.cqe.report.nuspec",
+        "lib/net10.0/Model.CQE.Report.dll"
+      ]
+    },
+    "Plugin.Azure.StorageAccount/10.0.0-13479": {
+      "sha512": "x",
+      "type": "package",
+      "path": "plugin.azure.storageaccount/10.0.0-13479",
+      "files": [
+        "plugin.azure.storageaccount.10.0.0-13479.nupkg.sha512",
+        "plugin.azure.storageaccount.nuspec",
+        "lib/net10.0/Plugin.Azure.StorageAccount.dll"
+      ]
+    },
+    "Model.PBM/10.0.0-13096": {
+      "sha512": "x",
+      "type": "package",
+      "path": "model.pbm/10.0.0-13096",
+      "files": [
+        "model.pbm.10.0.0-13096.nupkg.sha512",
+        "model.pbm.nuspec",
+        "lib/net10.0/Model.PBM.dll"
+      ]
+    },
+    "Model.Ref/10.0.0-13570": {
+      "sha512": "x",
+      "type": "package",
+      "path": "model.ref/10.0.0-13570",
+      "files": [
+        "model.ref.10.0.0-13570.nupkg.sha512",
+        "model.ref.nuspec",
+        "lib/net10.0/Model.Ref.dll"
+      ]
+    },
+    "Newtonsoft.Json/13.0.3": {
+      "sha512": "x",
+      "type": "package",
+      "path": "newtonsoft.json/13.0.3",
+      "files": [
+        "newtonsoft.json.13.0.3.nupkg.sha512",
+        "newtonsoft.json.nuspec",
+        "lib/net10.0/Newtonsoft.Json.dll",
+        ".signature.p7s"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net10.0": [
+      "Model.PBM >= 10.0.0-13096",
+      "Model.Import >= 10.0.*-*",
+      "Model.Ref >= 10.0.0-13570",
+      "Newtonsoft.Json >= 13.0.3"
+    ]
+  },
+  "project": {
+    "version": "10.0.0",
+    "restore": {
+      "projectName": "DataImporter.Demo",
+      "projectPath": "C:\\dev\\git\\Demo\\DataImporter.Demo.csproj",
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net10.0": {
+          "targetAlias": "net10.0",
+          "projectReferences": {}
+        }
+      }
+    },
+    "frameworks": {
+      "net10.0": {
+        "targetAlias": "net10.0",
+        "dependencies": {
+          "Model.PBM": {
+            "target": "Package",
+            "version": "[10.0.0-13096, )"
+          },
+          "Model.Import": {
+            "target": "Package",
+            "version": "[10.0.*-*, )"
+          },
+          "Model.Ref": {
+            "target": "Package",
+            "version": "[10.0.0-13570, )"
+          },
+          "Newtonsoft.Json": {
+            "target": "Package",
+            "version": "[13.0.3, )"
+          }
+        }
+      }
+    }
+  }
+}

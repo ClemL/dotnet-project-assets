@@ -28,7 +28,7 @@ function load(paths: string[]): BindingResult {
     inputs.push({ inputId: fileName, fileName, kind: r.kind });
     if (r.kind === 'deps') deps.push(r.deps);
     else if (r.kind === 'manifest') manifests.push(r.manifest);
-    else runtimeConfigs.push(r.runtimeConfig);
+    else if (r.kind === 'runtimeconfig') runtimeConfigs.push(r.runtimeConfig);
   }
   return analyzeBinding({ inputs, deps, manifests, runtimeConfigs });
 }

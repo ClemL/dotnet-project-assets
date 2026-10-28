@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-10-28T12:00:00Z",
+  "appName": "DataImporter.Demo",
+  "roots": ["C:\\Apps\\Importer"],
+  "assemblies": [
+    { "path": "DataImporter.Demo.dll", "root": 0, "name": "DataImporter.Demo", "version": "10.0.0.0", "publicKeyToken": null, "fileVersion": "10.0.0.0",
+      "references": [ { "name": "Model.PBM", "version": "10.0.0.0", "publicKeyToken": null }, { "name": "Model.CQE.Landing.Sentry", "version": "10.0.0.0", "publicKeyToken": null } ] },
+    { "path": "Model.Import.dll", "root": 0, "name": "Model.Import", "version": "10.0.0.19269", "publicKeyToken": null, "fileVersion": "10.0.0.19269",
+      "references": [ { "name": "System.Runtime", "version": "10.0.0.0", "publicKeyToken": "b03f5f7f11d50a3a" }, { "name": "Feature.Helper", "version": "10.0.0.0", "publicKeyToken": null } ] },
+    { "path": "Model.CQE.dll", "root": 0, "name": "Model.CQE", "version": "10.0.0.0", "publicKeyToken": null, "fileVersion": "10.0.0.33100",
+      "references": [ { "name": "Model.Import", "version": "10.0.0.19269", "publicKeyToken": null } ] },
+    { "path": "Model.CQE.Landing.Sentry.dll", "root": 0, "name": "Model.CQE.Landing.Sentry", "version": "10.0.0.0", "publicKeyToken": null, "fileVersion": "10.0.0.29870",
+      "references": [ { "name": "Model.CQE", "version": "10.0.0.0", "publicKeyToken": null }, { "name": "Model.Import", "version": "10.0.0.29865", "publicKeyToken": null }, { "name": "System.Runtime", "version": "10.0.0.0", "publicKeyToken": "b03f5f7f11d50a3a" } ] },
+    { "path": "Model.CQE.Landing.BILH.dll", "root": 0, "name": "Model.CQE.Landing.BILH", "version": "10.0.0.0", "publicKeyToken": null, "fileVersion": "10.0.0.19300",
+      "references": [ { "name": "Model.CQE", "version": "10.0.0.0", "publicKeyToken": null }, { "name": "Model.Import", "version": "10.0.0.19269", "publicKeyToken": null }, { "name": "Model.CQE.Landing.Sentry", "version": "10.0.0.0", "publicKeyToken": null } ] },
+    { "path": "Plugin.Excel.dll", "root": 0, "name": "Plugin.Excel", "version": "10.0.0.0", "publicKeyToken": null, "fileVersion": "10.0.0.34380",
+      "references": [ { "name": "Model.Import", "version": "10.0.0.34377", "publicKeyToken": null } ] }
+  ],
+  "framework": [ { "name": "System.Runtime", "version": "10.0.0.0", "framework": "Microsoft.NETCore.App", "publicKeyToken": "b03f5f7f11d50a3a" } ]
+}

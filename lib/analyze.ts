@@ -79,7 +79,7 @@ export function analyzeScope(scopeId: string, label: string, models: ProjectMode
 /** Distinct Id+version pairs (with the node types seen for each), including the files' own projects. */
 export function collectPackages(models: ProjectModel[], opts: AnalyzeOptions): PackageRef[] {
   const map = new Map<string, PackageRef>();
-  const add = (id: string, version: string, type: NodeType, isRootProject: boolean) => {
+  const add = (id: string, version: string, type: NodeType, isRootProject: boolean, signed?: boolean) => {
     const k = `${id.toLowerCase()}/${version.toLowerCase()}`;
     let p = map.get(k);
     if (!p) {
@@ -88,10 +88,13 @@ export function collectPackages(models: ProjectModel[], opts: AnalyzeOptions): P
     }
     if (!p.types.includes(type)) p.types.push(type);
     if (isRootProject) p.isRootProject = true;
+    if (p.signed === undefined && signed !== undefined) p.signed = signed;
   };
   for (const m of models) {
     add(m.projectName, m.projectVersion, 'project', true);
-    for (const t of selectTargets(m, opts)) for (const n of Object.values(t.nodes)) add(n.id, n.version, n.type, false);
+    for (const t of selectTargets(m, opts)) {
+      for (const n of Object.values(t.nodes)) add(n.id, n.version, n.type, false, n.type === 'package' ? m.librarySigned[`${n.id.toLowerCase()}/${n.version.toLowerCase()}`] : undefined);
+    }
   }
   return [...map.values()].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : compareVersionStrings(a.version, b.version)));
 }

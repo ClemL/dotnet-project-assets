@@ -181,3 +181,35 @@ describe('suggestions and build order integration', () => {
     expect(view?.order.ok && view.order.waves).toEqual([['acme.core', 'acme.logging'], ['acme.data', 'contoso.plugin'], ['acme.web']]);
   });
 });
+
+describe('package signature heuristic', () => {
+  const settings = { ...DEFAULT_SETTINGS, offline: true, internalPrefixes: ['Acme.'] };
+  const pkg = (id: string, signed?: boolean) => ({ key: id.toLowerCase(), id, version: '1.0.0', types: ['package' as const], isRootProject: false, signed });
+  const classify = (packages: ReturnType<typeof pkg>[], metadata: Record<string, string> = {}) => classifyAll({ packages, settings, lookups: {}, metadata, overrides: {} });
+
+  it('classifies signed packages as public and unsigned ones as internal', () => {
+    const out = classify([pkg('Newtonsoft.Json', true), pkg('Model.Import', false)]);
+    expect(out.byId['newtonsoft.json']).toMatchObject({ origin: 'Public', reasons: ['repository-signed (.signature.p7s) → public'] });
+    expect(out.byId['model.import']).toMatchObject({ origin: 'PrivateInferred', reasons: ['unsigned → internal'] });
+    expect(out.lookupCandidates).toEqual([]);
+  });
+
+  it('ranks below source metadata and the prefix rules, above the nuget.org lookup', () => {
+    const out = classify([pkg('Acme.Signed', true), pkg('Microsoft.Unsigned', false), pkg('Feed.Pkg', false), pkg('No.Files')], {
+      'feed.pkg/1.0.0': 'https://api.nuget.org/v3/index.json',
+    });
+    expect(out.byId['acme.signed']?.origin).toBe('Private');
+    expect(out.byId['microsoft.unsigned']?.origin).toBe('System');
+    expect(out.byId['feed.pkg']?.origin).toBe('Public');
+    // No files list: falls through to the lookup step (offline → Unclassified).
+    expect(out.byId['no.files']).toMatchObject({ origin: 'Unclassified' });
+    expect(out.lookupCandidates).toEqual(['no.files']);
+  });
+
+  it('reads .signature.p7s from real SDK 10 assets files', () => {
+    const a = analyzeFixtures('skew/sdk10-lockfile-floats.assets.json');
+    expect(a.packages.filter((p) => p.types.includes('package')).every((p) => p.signed === true)).toBe(true);
+    const { classification } = classifyAndOrder(a, { settings: { ...DEFAULT_SETTINGS, offline: true }, lookups: {}, metadata: {}, overrides: {} }, { includeProjects: true });
+    expect(classification.byId['newtonsoft.json']?.origin).toBe('Public');
+  });
+});
