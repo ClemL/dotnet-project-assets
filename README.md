@@ -178,3 +178,15 @@ writer from 5.11 through 7.9:
    trailing `.0` fourth part).
 6. `targets[...].dependencies` values are NuGet range strings: a bare `1.2.3` means ≥ 1.2.3.
 7. The global packages folder layout is `<id-lowercase>/<version-lowercase>/.nupkg.metadata`.
+
+## Changelog
+
+The footer shows the app version, the build time, and the newest entry from `public/updates.txt`;
+clicking the entry opens the full list, newest first.
+
+- One entry per line, **oldest first, newest last**, so shipping one is a one-line append:
+  `YYYY-MM-DDTHH:MM:00Z - What changed, as a plain sentence` (get the time with
+  `date -u +%Y-%m-%dT%H:%M:00Z`).
+- Only user-visible changes get a line. No commit hashes, pull request numbers, or names.
+- The file is fetched at runtime, so editing it needs no code change, only a redeploy. A missing or
+  empty file only hides the entry; the version and build time still show.

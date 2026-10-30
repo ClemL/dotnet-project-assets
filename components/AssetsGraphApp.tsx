@@ -174,7 +174,7 @@ export default function AssetsGraphApp() {
   const dupCount = scope ? scope.duplicates.tfm.length + scope.duplicates.drift.length + conflicts + scope.duplicates.redundant.length + scope.duplicates.caseCollisions.length : undefined;
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-4 px-4 py-6">
+    <div className="mx-auto w-full max-w-[1400px] space-y-4 px-4 py-6">
       <header className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Assets Graph</h1>
@@ -366,7 +366,6 @@ export default function AssetsGraphApp() {
       {tab !== 'inputs' && tab !== 'collect' && tab !== 'binding' && !hasResults ? <Banner tone="info" title="Analyze at least one file first." /> : null}
       {tab === 'binding' && !bindingReady ? <Banner tone="info" title="Load a deps.json and an assembly manifest under Inputs → Runtime binding inputs." /> : null}
 
-      <footer className="pt-4 text-xs text-muted">Assets Graph · static site, no server code, no analytics.</footer>
     </div>
   );
 }

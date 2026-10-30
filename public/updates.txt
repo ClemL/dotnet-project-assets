@@ -1,0 +1,6 @@
+2026-10-26T04:36:00Z - Assets Graph launches: load project.assets.json files by paste, upload, or folder scan, and classify every package as Project, System, Private, or Public, all in the browser
+2026-10-26T04:43:00Z - Dependency list, duplicate checks, dependency trees with a path search, the internal build order in parallel waves, and Markdown, JSON, and CSV exports
+2026-10-26T13:04:00Z - Binding check: find assembly versions that would fail to load at runtime, from an app's deps.json and an assembly manifest
+2026-10-26T13:21:00Z - Version skew: find internal packages built against older builds of other internal packages, with a rebuild plan and a list of floating references
+2026-10-26T15:14:00Z - Collect scripts tab: PowerShell scripts that gather this app's inputs from your machine and servers, and a Copy button on every code snippet
+2026-10-30T23:02:00Z - Added this changelog
